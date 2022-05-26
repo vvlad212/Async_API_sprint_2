@@ -1,0 +1,1 @@
+ */1 * * * *  python3 /etl/etl_script_runner.py >>/tmp/out.log 2>&1
