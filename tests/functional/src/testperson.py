@@ -66,6 +66,7 @@ async def test_search_detailed_cashed(es_client, redis_client, make_get_request)
     cashed_data = json.loads(cashed_data.decode('utf8'))
     assert cashed_data['id'] == person_id
     assert cashed_data['full_name'] == full_name
+    pass
 
 
 @pytest.mark.asyncio
