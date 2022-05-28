@@ -10,15 +10,9 @@ from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
 import settings
 
-
 SERVICE_URL = 'http://127.0.0.1:8000'
 
-#
-@pytest.fixture(scope='session')
-async def get_eventloop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
+
 
 
 @dataclass
@@ -27,12 +21,19 @@ class HTTPResponse:
     headers: CIMultiDictProxy[str]
     status: int
 
+@pytest.fixture(scope='session')
+async def get_eventloop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    # loop.close()
+
 
 @pytest.fixture(scope='session')
 async def redis_client():
-    rd_client = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT))
-    yield rd_client
-    rd_client.close()
+    client = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT), minsize=10, maxsize=20)
+    yield client
+    client.close()
+
 
 @pytest.fixture(scope='session')
 async def es_client():
@@ -54,10 +55,10 @@ def make_get_request(session):
         params = params or {}
         url = SERVICE_URL + '/api/v1' + method  # в боевых системах старайтесь так не делать!
         async with session.get(url, params=params) as response:
-          return HTTPResponse(
-            body=await response.json(),
-            headers=response.headers,
-            status=response.status,
-          )
-    return inner
+            return HTTPResponse(
+                body=await response.json(),
+                headers=response.headers,
+                status=response.status,
+            )
 
+    return inner
