@@ -51,3 +51,14 @@ person_list = [
     {'full_name': 'Will Fetters', 'id': UUID('dd0d82d8-1c95-4bb9-b9c6-d707773aa4db')},
     {'full_name': 'Moss Hart', 'id': UUID('7fb9ae3d-aeac-40a9-aa25-cd6992be16a6')},
     {'full_name': 'John Gregory Dunne', 'id': UUID('2b0f84fb-416b-4c30-80db-69478bf872be')}]
+
+film_by_person = [
+    {'id': '3d825f60-9fff-4dfe-b294-1a45fa1e115d', 'title': 'Star Wars: Episode IV - A New Hope', 'imdb_rating': 8.6},
+    {'id': '0312ed51-8833-413f-bff5-0e139c11264a', 'title': 'Star Wars: Episode V - The Empire Strikes Back','imdb_rating': 8.7},
+    {'id': '025c58cd-1b7e-43be-9ffb-8571a613579b', 'title': 'Star Wars: Episode VI - Return of the Jedi','imdb_rating': 8.3},
+    {'id': 'cddf9b8f-27f9-4fe9-97cb-9e27d4fe3394', 'title': 'Star Wars: Episode VII - The Force Awakens','imdb_rating': 7.9},
+    {'id': '12a8279d-d851-4eb9-9d64-d690455277cc', 'title': 'Star Wars: Episode VIII - The Last Jedi','imdb_rating': 7.0},
+    {'id': '46f15353-2add-415d-9782-fa9c5b8083d5', 'title': 'Star Wars: Episode IX - The Rise of Skywalker','imdb_rating': 6.7},
+    {'id': '134989c3-3b20-4ae7-8092-3e8ad2333d59', 'title': 'The Star Wars Holiday Special', 'imdb_rating': 2.1},
+    {'id': 'f241a62c-2157-432a-bbeb-9c579c8bc18b', 'title': 'Star Wars: Episode IV: A New Hope - Deleted Scenes','imdb_rating': 8.4},
+    {'id': '4f53452f-a402-4a76-89fd-f034eeb8d657','title': 'Star Wars: Episode V - The Empire Strikes Back: Deleted Scenes','imdb_rating': 7.6}]

@@ -13,16 +13,15 @@ import settings
 SERVICE_URL = 'http://127.0.0.1:8000'
 
 
-
-
 @dataclass
 class HTTPResponse:
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
 
+
 @pytest.fixture(scope='session')
-async def get_eventloop():
+def get_eventloop():
     loop = asyncio.get_event_loop()
     yield loop
     # loop.close()
@@ -30,9 +29,9 @@ async def get_eventloop():
 
 @pytest.fixture(scope='session')
 async def redis_client():
-    client = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT), minsize=10, maxsize=20)
-    yield client
-    client.close()
+    rd_client = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT))
+    yield rd_client
+    rd_client.close()
 
 
 @pytest.fixture(scope='session')
