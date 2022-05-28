@@ -1,0 +1,52 @@
+version: '3.7'
+services:
+  api_tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: >
+      sh -c "python3 pytest /functional/src"
+    ports:
+      - 8001:8001
+
+  web:
+    build: ./fastapi-solution
+    expose:
+      - 8000
+    depends_on:
+      - db
+      - elasticsearch
+      - redis-cache
+    env_file:
+      - ./.env
+
+  nginx:
+    build: ./nginx
+    ports:
+      - 8000:80
+    depends_on:
+      - web
+
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    container_name: test_es
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - test_es_data:/usr/share/elasticsearch/test_data
+
+
+  redis:
+    image: redis
+    container_name: test_redis
+    restart: unless-stopped
+    volumes:
+      - test_redis_data:/data
+      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+
+
+
+volumes:
+  test_es_data:
+  test_redis_data:
