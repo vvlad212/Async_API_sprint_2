@@ -3,37 +3,40 @@ import logging
 from functools import lru_cache
 from typing import List, Optional, Tuple
 
-from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
 from db.elastic import get_elastic
-from db.redis import get_redis
 from models.film import FilmFull
+from pkg.cache_storage.redis_storage import get_redis_storage_service
+from pkg.cache_storage.storage import ABSCacheStorage
 
 logger = logging.getLogger(__name__)
 
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
-
 
 class FilmService:
-    def __init__(self, elastic: AsyncElasticsearch, redis: Redis):
-        self.redis = redis
+    def __init__(self, elastic: AsyncElasticsearch, cache_storage: ABSCacheStorage):
+        self.cache_storage = cache_storage
         self.elastic = elastic
 
     async def get_by_id(self, film_id: str) -> Optional[FilmFull]:
         """
-        Get filmwork by id from es or cache
+        Get filmwork by id from es or cache.
         """
-        film = await self._get_film_from_cache(film_id)
-        if not film:
-            film = await self._get_film_from_elastic(film_id)
-            if not film:
-                return None
+        logger.info("FilmService get_by_id started...")
 
-            await self._put_film_to_cache(film)
+        logger.info("Trying to get film from cache.")
+        film_data = await self.cache_storage.get_data(f"film_{film_id}")
+        if film_data:
+            return FilmFull.parse_raw(film_data)
 
-        return film
+        logger.info("Trying to get film from elastic.")
+        film = await self._get_film_from_elastic(film_id)
+        if film:
+            await self.cache_storage.set_data(f"film_{film_id}", film.json())
+            return film
+
+        return None
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[FilmFull]:
         try:
@@ -41,20 +44,6 @@ class FilmService:
         except NotFoundError:
             return None
         return FilmFull(**doc['_source'])
-
-    async def _get_film_from_cache(self, film_id: str) -> Optional[FilmFull]:
-        data = await self.redis.get(film_id)
-        if not data:
-            return None
-        film = FilmFull.parse_raw(data)
-        return film
-
-    async def _put_film_to_cache(self, film: FilmFull):
-        await self.redis.set(
-            film.id,
-            film.json(),
-            expire=FILM_CACHE_EXPIRE_IN_SECONDS
-        )
 
     async def get_films(
             self,
@@ -67,26 +56,32 @@ class FilmService:
         """
         Get filtred filmworks list from cache or es
         """
-        logger.info("get_films started...")
+        logger.info("FilmService get_films started...")
 
-        cache_key = '_'.join(
-            filter(
-                None,
-                (
-                    name,
-                    '_'.join(genres) if genres else None,
-                    sort,
-                    str(page_number),
-                    str(page_size)
+        logger.info(f"Trying to get films from cache.")
+        cache_key = "films_{}".format(
+            '_'.join(
+                filter(
+                    None,
+                    (
+                        name,
+                        '_'.join(genres) if genres else None,
+                        sort,
+                        str(page_number),
+                        str(page_size)
+                    )
                 )
             )
         )
-        logger.info(f"trying to get films from redis cache. Key: {cache_key}")
-        total_count, films = await self._get_films_from_cache(cache_key)
-        if films:
-            return total_count, films
+        films_bytes = await self.cache_storage.get_data(cache_key)
+        if films_bytes:
+            cached_json = json.loads(films_bytes.decode("utf-8"))
+            films = [
+                FilmFull(**film) for film in cached_json["source"]
+            ]
+            return cached_json["total_count"], films
 
-        logger.info("getting films from elastic.")
+        logger.info("Trying to get films from elastic.")
         query_body = await self._create_films_req_body(
             name,
             genres,
@@ -100,27 +95,13 @@ class FilmService:
         films = [FilmFull(**hit_source) for hit_source in hits_sources]
 
         if films:
-            logger.info("adding films to cache")
-            await self.redis.set(
+            await self.cache_storage.set_data(
                 cache_key,
-                json.dumps({"total_count": total_count, "source": hits_sources}),
-                expire=FILM_CACHE_EXPIRE_IN_SECONDS
+                json.dumps({"total_count": total_count,
+                            "source": hits_sources})
             )
 
         return total_count, films
-
-    async def _get_films_from_cache(
-            self,
-            cached_films_key: str
-    ) -> Tuple[int, Optional[List[FilmFull]]]:
-        films_bytes = await self.redis.get(cached_films_key)
-        if films_bytes:
-            cached_json = json.loads(films_bytes.decode("utf-8"))
-            films = [
-                FilmFull(**film) for film in cached_json["source"]
-            ]
-            return cached_json["total_count"], films
-        return 0, None
 
     async def _create_films_req_body(
             self,
@@ -192,7 +173,7 @@ class FilmService:
 
 @lru_cache()
 def get_film_service(
-        redis: Redis = Depends(get_redis),
+        cache_storage: ABSCacheStorage = Depends(get_redis_storage_service),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
-    return FilmService(elastic, redis)
+    return FilmService(elastic, cache_storage)
