@@ -1,5 +1,4 @@
 import asyncio
-
 import aioredis
 import aiohttp
 import pytest
@@ -20,13 +19,18 @@ class HTTPResponse:
     status: int
 
 
+@pytest.fixture(scope='session')
+def event_loop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture(scope='session')
 async def redis_client():
     rd_client = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT))
     yield rd_client
-    rd_client.close()
+    rd_client.wait_closed()
 
 
 @pytest.fixture(scope='session')
@@ -34,12 +38,6 @@ async def es_client():
     client = AsyncElasticsearch(hosts='127.0.0.1:9200')
     yield client
     await client.close()
-
-@pytest.fixture(scope='session')
-async def get_eventloop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    # loop.close()
 
 
 @pytest.fixture(scope='session')
