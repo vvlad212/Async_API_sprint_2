@@ -21,7 +21,7 @@ class HTTPResponse:
 
 
 @pytest.fixture(scope='session')
-def get_eventloop():
+async def get_eventloop():
     loop = asyncio.get_event_loop()
     yield loop
     # loop.close()
