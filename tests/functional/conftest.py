@@ -20,11 +20,6 @@ class HTTPResponse:
     status: int
 
 
-@pytest.fixture(scope='session')
-async def get_eventloop():
-    loop = asyncio.get_event_loop()
-    yield loop
-    # loop.close()
 
 
 @pytest.fixture(scope='session')
@@ -39,6 +34,12 @@ async def es_client():
     client = AsyncElasticsearch(hosts='127.0.0.1:9200')
     yield client
     await client.close()
+
+@pytest.fixture(scope='session')
+async def get_eventloop():
+    loop = asyncio.get_event_loop()
+    yield loop
+    # loop.close()
 
 
 @pytest.fixture(scope='session')

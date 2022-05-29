@@ -1,4 +1,5 @@
 import json
+import time
 from typing import List
 
 import pytest
@@ -31,12 +32,9 @@ def create_bulk(data: List[dict], index_name: str):
 
 
 @pytest.mark.asyncio
-async def test_search_detailed(es_client, make_get_request):
-    check_index(es_client, 'person')
-
+async def test_search_detailed(make_get_request, es_client):
     person_id = str(person_list[0]['id'])
     full_name = person_list[0]['full_name']
-
     bulk_query = create_bulk([person_list[0]], 'person')
     await es_client.bulk(bulk_query)
 
@@ -50,9 +48,7 @@ async def test_search_detailed(es_client, make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_search_detailed_cashed(es_client, redis_client, make_get_request):
-    check_index(es_client, 'person')
-    await es_client.ping()
+async def test_search_detailed_cashed(make_get_request, es_client, redis_client):
     person_id = str(person_list[0]['id'])
     full_name = person_list[0]['full_name']
 
@@ -70,7 +66,6 @@ async def test_search_detailed_cashed(es_client, redis_client, make_get_request)
 
 @pytest.mark.asyncio
 async def test_search_list(es_client, make_get_request):
-
     bulk_query = create_bulk(person_list, 'person')
     await es_client.bulk(bulk_query)
     response = await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
@@ -85,13 +80,13 @@ async def test_search_list(es_client, make_get_request):
 
 @pytest.mark.asyncio
 async def test_search_list_cached(es_client, redis_client, make_get_request):
-
     bulk_query = create_bulk(person_list, 'person')
     await es_client.bulk(bulk_query)
     await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
 
     response = await redis_client.get(f'person_list{int(len(person_list))}0')
-    result_response_list = {json.loads(row)['id']: json.loads(row) for row in json.loads(response.decode('utf8'))['data']}
+    result_response_list = {json.loads(row)['id']: json.loads(row) for row in
+                            json.loads(response.decode('utf8'))['data']}
     assert len(result_response_list) == len(person_list)
     for row in person_list:
         for keys in row.keys():
