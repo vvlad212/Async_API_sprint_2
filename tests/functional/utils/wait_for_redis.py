@@ -1,23 +1,31 @@
+import asyncio
 import logging
+import time
 
-import redis
+import aioredis
+
 from logging import config as logger_conf
 
-from utils.logger import log_conf
+import config
+from logger import log_conf
 
 logger_conf.dictConfig(log_conf)
 logger = logging.getLogger(__name__)
 
 
-def wait_redis():
-    """Подключение к БД Postgres.
+async def redis_waiters():
+    while True:
+        try:
+            redis_conn = await aioredis.create_redis_pool((config.REDIS_HOST, config.REDIS_PORT))
+            logger.info("Redis connection OK")
+            await redis_conn.wait_closed()
+            return
+        except Exception as ex:
+            logger.info("Redis connection FAILED")
+            logger.error(ex)
+            time.sleep(5)
 
-    Returns:
-        connection:
-    """
-    pool = redis.ConnectionPool(host='127.0.0.1', port=6379, db=0)
-    redis_conn = redis.Redis(connection_pool=pool)
-    if redis_conn.ping():
-        logger.info("RD connection OK")
-    else:
-        pass
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(redis_waiters())
+loop.close()

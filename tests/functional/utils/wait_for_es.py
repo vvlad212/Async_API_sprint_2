@@ -1,27 +1,24 @@
 import logging
+import time
 
-from elasticsearch import Elasticsearch, ElasticsearchException
 from logging import config as logger_conf
 
-from utils.logger import log_conf
+from elasticsearch import Elasticsearch
+
+import config
+from logger import log_conf
 
 logger_conf.dictConfig(log_conf)
 logger = logging.getLogger(__name__)
 
-
-def wait_es() -> Elasticsearch:
-    """Подключение к Elastic.
-
-    Returns:
-        Elasticsearch:
-    """
-
-    client = Elasticsearch([{'host': '127.0.0.1', 'port': 9200}])
-    if client.ping():
-        pass
-        logger.info("ES connection OK")
-    else:
-        pass
-
-
-
+while True:
+    try:
+        client = Elasticsearch(hosts=[f'{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'])
+        if client.ping():
+            logger.info("ES connection OK")
+            break
+        else:
+            logger.info("ES connection FAILED")
+            time.sleep(5)
+    except Exception as ex:
+        logger.error(ex)
