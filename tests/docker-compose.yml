@@ -1,13 +1,30 @@
-version: '3.7'
+version: "3.9"
+
 services:
-  api_tests:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    entrypoint: >
-      sh -c "python3 pytest /functional/src"
-    ports:
-      - 8001:8001
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - 01_docker_compose_postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+
+  redis-cache:
+    image: redis:6.2-alpine
+    restart: always
+    volumes:
+      - cache:/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+    volumes:
+    - new_admin_panel_sprint_3_elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+    - xpack.monitoring.enabled=true
+    - xpack.watcher.enabled=false
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    - discovery.type=single-node
 
   web:
     build: ./fastapi-solution
@@ -27,26 +44,61 @@ services:
     depends_on:
       - web
 
-  es:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-    container_name: test_es
+  fw-etl-film_work-script:
+    build: ./ETL/ETL_filmwork
+    depends_on:
+      - db
+      - redis-cache
+      - elasticsearch
+    env_file:
+      - ./.env
     environment:
-      - discovery.type=single-node
-    volumes:
-      - test_es_data:/usr/share/elasticsearch/test_data
+        MODEL_TO_CHECK: film_work
 
+  fw-etl-person-script:
+    build: ./ETL/ETL_filmwork
+    depends_on:
+      - db
+      - redis-cache
+      - elasticsearch
+    env_file:
+      - ./.env
+    environment:
+        MODEL_TO_CHECK: person
 
-  redis:
-    image: redis
-    container_name: test_redis
-    restart: unless-stopped
-    volumes:
-      - test_redis_data:/data
-      - ../redis/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
+  fw-etl-genre-script:
+    build: ./ETL/ETL_filmwork
+    depends_on:
+      - db
+      - redis-cache
+      - elasticsearch
+    env_file:
+      - ./.env
+    environment:
+        MODEL_TO_CHECK: genre
 
+  genre-etl-script:
+    build: ./ETL/ETL_genre
+    depends_on:
+      - db
+      - redis-cache
+      - elasticsearch
+    env_file:
+      - ./.env
+
+  person-etl-script:
+    build: ./ETL/ETL_person
+    depends_on:
+      - elasticsearch
+      - db
+      - redis-cache
+    env_file:
+      - ./.env
 
 
 volumes:
-  test_es_data:
-  test_redis_data:
+  01_docker_compose_postgres_data:
+    external: true
+  cache:
+  new_admin_panel_sprint_3_elasticsearch-data:
+    external: true
