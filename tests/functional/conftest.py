@@ -10,8 +10,6 @@ from elasticsearch import AsyncElasticsearch
 import settings
 from testdata.ES_indexes import mappings
 
-SERVICE_URL = 'http://127.0.0.1:8000'
-
 
 @dataclass
 class HTTPResponse:
@@ -62,7 +60,7 @@ async def session():
 def make_get_request(session):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
-        url = SERVICE_URL + '/api/v1' + method
+        url = settings.SERVICE_URL + settings.API + method
         async with session.get(url, params=params) as response:
             return HTTPResponse(
                 body=await response.json(),

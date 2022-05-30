@@ -6,4 +6,5 @@ RUN pip install -r ./requirements.txt
 
 
 COPY functional functional
+WORKDIR /functional
 CMD ["pytest", "-vv" ,"functional"]
