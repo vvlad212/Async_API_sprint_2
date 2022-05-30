@@ -1,19 +1,9 @@
 import json
-import time
 from typing import List
 
 import pytest
-
-from testdata.ES_indexes import mappings
 from testdata.persondata_in import person_list, film_by_person
 
-
-def check_index(es_client, index_name: str):
-    if not es_client.indices.exists(index_name):
-        es_client.indices.create(
-            index=index_name,
-            body=mappings[index_name]
-        )
 
 
 def create_bulk(data: List[dict], index_name: str):

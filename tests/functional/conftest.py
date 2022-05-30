@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
 import settings
+from testdata.ES_indexes import mappings
 
 SERVICE_URL = 'http://127.0.0.1:8000'
 
@@ -17,6 +18,15 @@ class HTTPResponse:
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
+
+
+@pytest.fixture(scope='session', params=["genre", "person"])
+def check_index(es_client, params):
+    if not es_client.indices.exists(params):
+        es_client.indices.create(
+            index=params,
+            body=mappings[params]
+        )
 
 
 @pytest.fixture(scope='session')
