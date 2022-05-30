@@ -40,7 +40,8 @@ def event_loop():
 async def redis_client():
     rd_client = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT))
     yield rd_client
-    rd_client.wait_closed()
+    rd_client.close()
+    await rd_client.wait_closed()
 
 
 @pytest.fixture(scope='session')
