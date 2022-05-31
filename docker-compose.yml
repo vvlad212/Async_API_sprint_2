@@ -81,3 +81,5 @@ volumes:
   elasticsearch_test_data:
   cache:
   new_admin_panel_sprint_3_elasticsearch-data:
+    external: true
+
