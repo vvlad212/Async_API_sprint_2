@@ -7,6 +7,7 @@ services:
     volumes:
       - cache:/data
 
+
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
     volumes:

@@ -39,13 +39,14 @@ async def check_index(es_client):
     keys = await client_source.indices.get_alias()
     for ind in keys:
         old_mapping = await client_source.indices.get_mapping(ind)
-        if not await client_target.indices.exists(ind):
-            await client_target.indices.create(
-                index=ind,
-                body={
-                    "settings": index_settings,
-                    "mappings": old_mapping[ind]['mappings']}
-            )
+        if await client_target.indices.exists(ind):
+            await es_client.indices.delete(index=ind)
+        await client_target.indices.create(
+            index=ind,
+            body={
+                "settings": index_settings,
+                "mappings": old_mapping[ind]['mappings']}
+        )
 
     await client_source.close()
 
