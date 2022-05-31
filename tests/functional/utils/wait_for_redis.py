@@ -6,7 +6,7 @@ import aioredis
 
 from logging import config as logger_conf
 
-import config
+import settings
 from logger import log_conf
 
 logger_conf.dictConfig(log_conf)
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 async def redis_waiters():
     while True:
         try:
-            redis_conn = await aioredis.create_redis_pool((config.REDIS_HOST, config.REDIS_PORT))
+            redis_conn = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT))
             logger.info("Redis connection OK")
             redis_conn.close()
             await redis_conn.wait_closed()

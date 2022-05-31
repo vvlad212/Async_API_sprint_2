@@ -44,7 +44,7 @@ async def redis_client():
 
 @pytest.fixture(scope='session')
 async def es_client():
-    client = AsyncElasticsearch(hosts='127.0.0.1:9200')
+    client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
     yield client
     await client.close()
 

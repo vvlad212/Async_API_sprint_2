@@ -83,28 +83,28 @@ async def test_search_list_cached(es_client, redis_client, make_get_request):
             assert str(row[keys]) == result_response_list[str(row['id'])][keys]
 
 
-@pytest.mark.asyncio
-async def test_search_filmbyname(es_client, make_get_request):
-    response = await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
-                                      params={'page[size]': 100})
-
-    result_response_list = {row['id']: row for row in response.body['records']}
-    assert response.status == 200
-    assert len(film_by_person) == len(result_response_list)
-    for row in film_by_person:
-        for keys in row.keys():
-            assert row[keys] == result_response_list[str(row['id'])][keys]
-
-
-@pytest.mark.asyncio
-async def test_search_filmbyname_cashed(es_client, redis_client, make_get_request):
-    await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
-                           params={'page[size]': 100})
-
-    response = await redis_client.get(f'film_by_personb5d2b63a-ed1f-4e46-8320-cf52a32be3581000')
-    result_response_list = {json.loads(row)['id']: json.loads(row) for row in
-                            json.loads(response.decode('utf8'))['data']}
-    assert len(result_response_list) == len(film_by_person)
-    for row in film_by_person:
-        for keys in row.keys():
-            assert row[keys] == result_response_list[str(row['id'])][keys]
+# @pytest.mark.asyncio
+# async def test_search_filmbyname(es_client, make_get_request):
+#     response = await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
+#                                       params={'page[size]': 100})
+#
+#     result_response_list = {row['id']: row for row in response.body['records']}
+#     assert response.status == 200
+#     assert len(film_by_person) == len(result_response_list)
+#     for row in film_by_person:
+#         for keys in row.keys():
+#             assert row[keys] == result_response_list[str(row['id'])][keys]
+#
+#
+# @pytest.mark.asyncio
+# async def test_search_filmbyname_cashed(es_client, redis_client, make_get_request):
+#     await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
+#                            params={'page[size]': 100})
+#
+#     response = await redis_client.get(f'film_by_personb5d2b63a-ed1f-4e46-8320-cf52a32be3581000')
+#     result_response_list = {json.loads(row)['id']: json.loads(row) for row in
+#                             json.loads(response.decode('utf8'))['data']}
+#     assert len(result_response_list) == len(film_by_person)
+#     for row in film_by_person:
+#         for keys in row.keys():
+#             assert row[keys] == result_response_list[str(row['id'])][keys]

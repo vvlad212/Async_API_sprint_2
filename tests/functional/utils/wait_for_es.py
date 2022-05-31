@@ -4,8 +4,8 @@ import time
 from logging import config as logger_conf
 
 from elasticsearch import Elasticsearch
+import settings
 
-import config
 from logger import log_conf
 
 logger_conf.dictConfig(log_conf)
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 while True:
     try:
-        client = Elasticsearch(hosts=[f'{config.ELASTIC_HOST}:{config.ELASTIC_PORT}'])
+        client = Elasticsearch(hosts=[f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}'])
         if client.ping():
             logger.info("ES connection OK")
             break

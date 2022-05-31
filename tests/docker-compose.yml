@@ -40,7 +40,7 @@ services:
       entrypoint: >
         sh -c "python3 /functional/utils/wait_for_es.py
         && python3 /functional/utils/wait_for_redis.py
-        && pytest /functional/src"
+        && pytest /functional/src/ -s --setup-show -p no:warnings"
       depends_on:
         - elasticsearch_test
         - redis-cache_test
