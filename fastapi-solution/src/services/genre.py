@@ -28,7 +28,7 @@ class GenreService(ServiceClass):
         if not genre_list:
             total, genre_list = await self._search_match_from_elastic(
                 match_query={"match_all": {}},
-                index_name='genre',
+                index_name='genres',
                 page_size=page_size,
                 offset_from=offset_from,
                 model=Genres
@@ -56,7 +56,7 @@ class GenreService(ServiceClass):
         if not genre:
             genre = await self._get_by_id_from_elastic(
                 genre_id,
-                'genre',
+                'genres',
                 Genres)
 
             if not genre:

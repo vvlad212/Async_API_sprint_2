@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
 import settings
-from testdata.ES_indexes import mappings
+from testdata.ES_indexes import settings as index_settings
 
 
 @dataclass
@@ -16,15 +16,6 @@ class HTTPResponse:
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
-
-
-@pytest.fixture(scope='session', params=["genre", "person"])
-def check_index(es_client, params):
-    if not es_client.indices.exists(params):
-        es_client.indices.create(
-            index=params,
-            body=mappings[params]
-        )
 
 
 @pytest.fixture(scope='session')
@@ -42,9 +33,28 @@ async def redis_client():
     await rd_client.wait_closed()
 
 
+async def check_index(es_client):
+    client_source = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_SOURCE}:{settings.ELASTIC_PORT_SOURCE}')
+    client_target = es_client
+    keys = await client_source.indices.get_alias()
+    for ind in keys:
+        old_mapping = await client_source.indices.get_mapping(ind)
+        if await client_target.indices.exists(ind):
+            await es_client.indices.delete(index=ind)
+        await client_target.indices.create(
+            index=ind,
+            body={
+                "settings": index_settings,
+                "mappings": old_mapping[ind]['mappings']}
+        )
+
+    await client_source.close()
+
+
 @pytest.fixture(scope='session')
 async def es_client():
     client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
+    await check_index(client)
     yield client
     await client.close()
 

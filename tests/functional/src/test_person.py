@@ -5,7 +5,6 @@ import pytest
 from testdata.persondata_in import person_list, film_by_person
 
 
-
 def create_bulk(data: List[dict], index_name: str):
     bulk = []
     for row in data:
@@ -19,6 +18,35 @@ def create_bulk(data: List[dict], index_name: str):
         )
         bulk.append(row)
     return bulk
+
+
+@pytest.mark.asyncio
+async def test_search_list(es_client, make_get_request):
+    bulk_query = create_bulk(person_list, 'person')
+    await es_client.bulk(bulk_query)
+    response = await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
+    result_response_list = {row['id']: row for row in response.body['records']}
+    assert response.status == 200
+    assert len(result_response_list) == len(person_list)
+
+    for row in person_list:
+        for keys in row.keys():
+            assert str(row[keys]) == result_response_list[str(row['id'])][keys]
+
+
+@pytest.mark.asyncio
+async def test_search_list_cached(es_client, redis_client, make_get_request):
+    bulk_query = create_bulk(person_list, 'person')
+    await es_client.bulk(bulk_query)
+    await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
+
+    response = await redis_client.get(f'person_list{int(len(person_list))}0')
+    result_response_list = {json.loads(row)['id']: json.loads(row) for row in
+                            json.loads(response.decode('utf8'))['data']}
+    assert len(result_response_list) == len(person_list)
+    for row in person_list:
+        for keys in row.keys():
+            assert str(row[keys]) == result_response_list[str(row['id'])][keys]
 
 
 @pytest.mark.asyncio
@@ -52,36 +80,6 @@ async def test_search_detailed_cashed(make_get_request, es_client, redis_client)
     cashed_data = json.loads(cashed_data.decode('utf8'))
     assert cashed_data['id'] == person_id
     assert cashed_data['full_name'] == full_name
-
-
-@pytest.mark.asyncio
-async def test_search_list(es_client, make_get_request):
-    bulk_query = create_bulk(person_list, 'person')
-    await es_client.bulk(bulk_query)
-    response = await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
-    result_response_list = {row['id']: row for row in response.body['records']}
-    assert response.status == 200
-    assert len(result_response_list) == len(person_list)
-
-    for row in person_list:
-        for keys in row.keys():
-            assert str(row[keys]) == result_response_list[str(row['id'])][keys]
-
-
-@pytest.mark.asyncio
-async def test_search_list_cached(es_client, redis_client, make_get_request):
-    bulk_query = create_bulk(person_list, 'person')
-    await es_client.bulk(bulk_query)
-    await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
-
-    response = await redis_client.get(f'person_list{int(len(person_list))}0')
-    result_response_list = {json.loads(row)['id']: json.loads(row) for row in
-                            json.loads(response.decode('utf8'))['data']}
-    assert len(result_response_list) == len(person_list)
-    for row in person_list:
-        for keys in row.keys():
-            assert str(row[keys]) == result_response_list[str(row['id'])][keys]
-
 
 # @pytest.mark.asyncio
 # async def test_search_filmbyname(es_client, make_get_request):

@@ -1,7 +1,7 @@
 from uuid import UUID
 
 person_list = [
-    {'full_name': 'George Lucass', 'id': UUID('a5a8f573-3cee-4ccc-8a2b-91cb9f55250a')},
+    {'full_name': 'George Lucas', 'id': UUID('a5a8f573-3cee-4ccc-8a2b-91cb9f55250a')},
     {'full_name': 'Mark Hamill', 'id': UUID('26e83050-29ef-4163-a99d-b546cac208f8')},
     {'full_name': 'Harrison Ford', 'id': UUID('5b4bf1bc-3397-4e83-9b17-8b10c6544ed1')},
     {'full_name': 'Carrie Fisher', 'id': UUID('b5d2b63a-ed1f-4e46-8320-cf52a32be358')},
