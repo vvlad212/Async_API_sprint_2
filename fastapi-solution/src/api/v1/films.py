@@ -1,8 +1,9 @@
 import math
 from enum import Enum
+from pydantic import Required
 from typing import List, Union
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Path
 
 from api.errors.httperrors import FilmHTTPNotFoundError
 from api.models.resp_models import FilmRespModel, FilmsResponseModel
@@ -11,11 +12,36 @@ from services.films import FilmService, get_film_service
 router = APIRouter()
 
 
-@router.get('/{film_id}', response_model=FilmRespModel)
+@router.get(
+    '/{film_id}',
+    response_model=FilmRespModel,
+    tags=["films"],
+    responses={
+        200: {
+            "description": "Film requested by ID",
+        },
+        404: {
+            "description": "Not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Film(s) not found"}
+                }
+            },
+        },
+    },
+)
 async def film_details(
-        film_id: str,
+        film_id: str = Path(
+            default=Required,
+            title="Film id",
+            description="UUID of the film to get",
+            example="2a090dde-f688-46fe-a9f4-b781a985275e",
+        ),
         film_service: FilmService = Depends(get_film_service)
 ) -> FilmRespModel:
+    """
+    Get film detail info by film uuid.
+    """
     film = await film_service.get_by_id(film_id)
     if not film:
         raise FilmHTTPNotFoundError
@@ -27,23 +53,48 @@ class FilmRating(str, Enum):
     asc = "asc_rating"
 
 
-@router.get('/', response_model=FilmsResponseModel)
+@router.get(
+    '/',
+    response_model=FilmsResponseModel,
+    tags=["films"],
+    responses={
+        200: {
+            "description": "Paginated filtered films array.",
+        },
+    }
+)
 async def get_films(
         name: Union[str, None] = Query(
             default=None,
             title="Name of the film(s)",
+            description="Filter by film name.",
             min_length=3,
         ),
         genres: Union[List[str], None] = Query(
-            alias="genre",
             default=None,
             title="Film(s) genres",
+            description="Filter by film genre.",
         ),
-        sort: FilmRating = "desc_rating",
-        page_number: int = Query(gt=0, default=1),
-        page_size: int = 20,
-        film_service: FilmService = Depends(get_film_service)) -> FilmsResponseModel:
-
+        sort: FilmRating = Query(
+            default=FilmRating.desc,
+            title="Film(s) genres",
+            description="Sorting order by imdb rating.",
+        ),
+        page_number: int = Query(
+            default=1,
+            gt=0,
+            description="Pagination page number.",
+        ),
+        page_size: int = Query(
+            default=20,
+            gt=0,
+            description="Pagination size number.",
+        ),
+        film_service: FilmService = Depends(get_film_service)
+) -> FilmsResponseModel:
+    """
+    Get filtered films list with pagination.
+    """
     total_count, films = await film_service.get_films(
         name,
         genres,
@@ -53,9 +104,6 @@ async def get_films(
     )
 
     films_res = [FilmRespModel.parse_obj(film.dict()) for film in films]
-
-    if not films_res:
-        raise FilmHTTPNotFoundError
 
     return FilmsResponseModel(
         total_count=total_count,
