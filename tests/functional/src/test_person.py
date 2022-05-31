@@ -23,6 +23,7 @@ def create_bulk(data: List[dict], index_name: str):
 
 @pytest.mark.asyncio
 async def test_search_detailed(make_get_request, es_client):
+
     person_id = str(person_list[0]['id'])
     full_name = person_list[0]['full_name']
     bulk_query = create_bulk([person_list[0]], 'person')

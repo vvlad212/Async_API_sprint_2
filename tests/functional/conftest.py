@@ -7,8 +7,9 @@ from typing import Optional
 from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
+from elasticsearch import Elasticsearch
 import settings
-from testdata.ES_indexes import mappings
+from testdata.ES_indexes import settings as index_settings
 
 
 @dataclass
@@ -16,8 +17,6 @@ class HTTPResponse:
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
-
-
 
 
 @pytest.fixture(scope='session')
@@ -36,8 +35,20 @@ async def redis_client():
 
 
 @pytest.fixture(scope='session')
-def check_index(es_client, es_client_source):
-    res = es_client.helpers.reindex(es_client_source, "person", "person")
+def check_index(es_client):
+    client_source = Elasticsearch([{'host': settings.ELASTIC_HOST_SOURCE, 'port': settings.ELASTIC_PORT_SOURCE}])
+    client_target = Elasticsearch([{'host': settings.ELASTIC_HOST, 'port': settings.ELASTIC_PORT}])
+    for ind in client_source.indices.get_alias().keys():
+        old_mapping = client_source.indices.get_mapping(ind)
+        if not client_target.indices.exists(ind):
+            client_target.indices.create(
+                index=ind,
+                body={
+                    "settings": index_settings,
+                    "mappings": old_mapping[ind]['mappings']}
+            )
+    client_target.close()
+    client_source.close()
     pass
 
 
@@ -46,13 +57,6 @@ async def es_client():
     client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
     yield client
     await client.close()
-
-
-@pytest.fixture(scope='session')
-async def es_client_source():
-    client_source = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_SOURCE}:{settings.ELASTIC_PORT_SOURCE}')
-    yield client_source
-    await client_source.close()
 
 
 @pytest.fixture(scope='session')
