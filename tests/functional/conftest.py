@@ -18,13 +18,6 @@ class HTTPResponse:
     status: int
 
 
-@pytest.fixture(scope='session', params=["genre", "person"])
-def check_index(es_client, params):
-    if not es_client.indices.exists(params):
-        es_client.indices.create(
-            index=params,
-            body=mappings[params]
-        )
 
 
 @pytest.fixture(scope='session')
@@ -43,10 +36,23 @@ async def redis_client():
 
 
 @pytest.fixture(scope='session')
+def check_index(es_client, es_client_source):
+    res = es_client.helpers.reindex(es_client_source, "person", "person")
+    pass
+
+
+@pytest.fixture(scope='session')
 async def es_client():
     client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
     yield client
     await client.close()
+
+
+@pytest.fixture(scope='session')
+async def es_client_source():
+    client_source = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_SOURCE}:{settings.ELASTIC_PORT_SOURCE}')
+    yield client_source
+    await client_source.close()
 
 
 @pytest.fixture(scope='session')

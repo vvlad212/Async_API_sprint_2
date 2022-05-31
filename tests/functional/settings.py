@@ -8,6 +8,10 @@ REDIS_PORT = int(os.getenv('REDIS_PORT_TEST', 6379))
 ELASTIC_HOST = os.getenv('ES_HOST_TEST', 'elasticsearch_test')
 ELASTIC_PORT = int(os.getenv('ES_PORT_TEST', 9200))
 
+# Настройки Elasticsearch
+ELASTIC_HOST_SOURCE = os.getenv('ES_HOST', 'elasticsearch')
+ELASTIC_PORT_SOURCE = int(os.getenv('ES_PORT', 9200))
+
 # URL приложения
 SERVICE_URL = os.getenv('SERVICE_URL', 'http://web_test:8000')
 
