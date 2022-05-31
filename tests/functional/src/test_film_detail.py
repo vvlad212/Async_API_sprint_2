@@ -1,11 +1,14 @@
+import json
 import uuid
+
 import pytest
 from elasticsearch import AsyncElasticsearch
+
 from testdata.film_test_data import film_test_doc
 
 
 @pytest.mark.asyncio
-async def test_get_film_detail_positive(es_client: AsyncElasticsearch, make_get_request):
+async def test_get_film_detail_positive(es_client: AsyncElasticsearch, redis_client, make_get_request):
     """
     endpoint /films/{film_id} positive test
     """
@@ -27,7 +30,23 @@ async def test_get_film_detail_positive(es_client: AsyncElasticsearch, make_get_
     resp_body["actors"].sort(key=lambda x: x["id"])
     resp_body["writers"].sort(key=lambda x: x["id"])
     resp_body["genre"].sort()
-    assert resp_body == film_test_doc, "wrong resp body"
+    assert resp_body == film_test_doc, "wrong elastic resp body"
+
+    # checking that film detail result has been cached
+    cache_key = f"film_{film_test_doc['id']}"
+    cashed_film_detail = await redis_client.get(cache_key)
+    assert cashed_film_detail != None, f"not found {cache_key} in redis"
+
+    film_res_json = json.loads(cashed_film_detail.decode('utf8'))
+    for key in ('actors_names', 'writers_names',):
+        film_res_json.pop(key, None)
+    film_res_json["actors"].sort(key=lambda x: x["id"])
+    film_res_json["writers"].sort(key=lambda x: x["id"])
+    film_res_json["genre"].sort()
+    assert film_res_json == film_test_doc, "wrong redis cache resp body"
+
+    # removing result from cache
+    await redis_client.delete(cache_key)
 
 
 @pytest.mark.asyncio
