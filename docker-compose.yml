@@ -64,10 +64,9 @@ services:
       - redis-cache_test
     env_file:
       - ./.env
-    expose:
-      - 8001
-
-    CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      ES_HOST: "elasticsearch_test"
+      REDIS_HOST: "redis-cache_test"
 
   api_tests:
       build: ./tests

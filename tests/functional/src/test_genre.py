@@ -57,7 +57,7 @@ async def test_search_detailed_cashed(make_get_request, es_client, redis_client)
 
 @pytest.mark.asyncio
 async def test_search_list(es_client, make_get_request):
-    bulk_query = create_bulk(genre_list, 'genre')
+    bulk_query = create_bulk(genre_list, 'genres')
     await es_client.bulk(bulk_query)
     response = await make_get_request(f'/genre/', params={'page[size]': int(len(genre_list))})
     result_response_list = {row['id']: row for row in response.body['records']}
@@ -71,7 +71,7 @@ async def test_search_list(es_client, make_get_request):
 
 @pytest.mark.asyncio
 async def test_search_list_cached(es_client, redis_client, make_get_request):
-    bulk_query = create_bulk(genre_list, 'genre')
+    bulk_query = create_bulk(genre_list, 'genres')
     await es_client.bulk(bulk_query)
     await make_get_request(f'/genre/', params={'page[size]': int(len(genre_list))})
 
