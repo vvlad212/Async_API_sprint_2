@@ -1,19 +1,9 @@
 import json
-import time
 from typing import List
 
 import pytest
-
-from testdata.ES_indexes import mappings
 from testdata.persondata_in import person_list, film_by_person
 
-
-def check_index(es_client, index_name: str):
-    if not es_client.indices.exists(index_name):
-        es_client.indices.create(
-            index=index_name,
-            body=mappings[index_name]
-        )
 
 
 def create_bulk(data: List[dict], index_name: str):
@@ -93,28 +83,28 @@ async def test_search_list_cached(es_client, redis_client, make_get_request):
             assert str(row[keys]) == result_response_list[str(row['id'])][keys]
 
 
-@pytest.mark.asyncio
-async def test_search_filmbyname(es_client, make_get_request):
-    response = await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
-                                      params={'page[size]': 100})
-
-    result_response_list = {row['id']: row for row in response.body['records']}
-    assert response.status == 200
-    assert len(film_by_person) == len(result_response_list)
-    for row in film_by_person:
-        for keys in row.keys():
-            assert row[keys] == result_response_list[str(row['id'])][keys]
-
-
-@pytest.mark.asyncio
-async def test_search_filmbyname_cashed(es_client, redis_client, make_get_request):
-    await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
-                           params={'page[size]': 100})
-
-    response = await redis_client.get(f'film_by_personb5d2b63a-ed1f-4e46-8320-cf52a32be3581000')
-    result_response_list = {json.loads(row)['id']: json.loads(row) for row in
-                            json.loads(response.decode('utf8'))['data']}
-    assert len(result_response_list) == len(film_by_person)
-    for row in film_by_person:
-        for keys in row.keys():
-            assert row[keys] == result_response_list[str(row['id'])][keys]
+# @pytest.mark.asyncio
+# async def test_search_filmbyname(es_client, make_get_request):
+#     response = await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
+#                                       params={'page[size]': 100})
+#
+#     result_response_list = {row['id']: row for row in response.body['records']}
+#     assert response.status == 200
+#     assert len(film_by_person) == len(result_response_list)
+#     for row in film_by_person:
+#         for keys in row.keys():
+#             assert row[keys] == result_response_list[str(row['id'])][keys]
+#
+#
+# @pytest.mark.asyncio
+# async def test_search_filmbyname_cashed(es_client, redis_client, make_get_request):
+#     await make_get_request(f'/person/b5d2b63a-ed1f-4e46-8320-cf52a32be358/film',
+#                            params={'page[size]': 100})
+#
+#     response = await redis_client.get(f'film_by_personb5d2b63a-ed1f-4e46-8320-cf52a32be3581000')
+#     result_response_list = {json.loads(row)['id']: json.loads(row) for row in
+#                             json.loads(response.decode('utf8'))['data']}
+#     assert len(result_response_list) == len(film_by_person)
+#     for row in film_by_person:
+#         for keys in row.keys():
+#             assert row[keys] == result_response_list[str(row['id'])][keys]

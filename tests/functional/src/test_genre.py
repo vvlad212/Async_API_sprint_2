@@ -7,13 +7,6 @@ from testdata.ES_indexes import mappings
 from testdata.genredata_in import genre_list
 
 
-def check_index(es_client, index_name: str):
-    if not es_client.indices.exists(index_name):
-        es_client.indices.create(
-            index=index_name,
-            body=mappings[index_name]
-        )
-
 
 def create_bulk(data: List[dict], index_name: str):
     bulk = []
@@ -64,7 +57,6 @@ async def test_search_detailed_cashed(make_get_request, es_client, redis_client)
 
 @pytest.mark.asyncio
 async def test_search_list(es_client, make_get_request):
-    check_index(es_client,'genre')
     bulk_query = create_bulk(genre_list, 'genre')
     await es_client.bulk(bulk_query)
     response = await make_get_request(f'/genre/', params={'page[size]': int(len(genre_list))})
@@ -90,5 +82,3 @@ async def test_search_list_cached(es_client, redis_client, make_get_request):
     for row in genre_list:
         for keys in row.keys():
             assert str(row[keys]) == result_response_list[str(row['id'])][keys]
-
-
