@@ -32,7 +32,7 @@ async def redis_client():
     await rd_client.wait_closed()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 async def check_index(es_client):
     """Copying indexes from prod elastic to test elastic
 
@@ -60,7 +60,6 @@ async def check_index(es_client):
                 "mappings": source_mapping[ind]['mappings']
             }
         )
-
     await client_source.close()
 
 
@@ -79,7 +78,7 @@ async def session():
 
 
 @pytest.fixture
-def make_get_request(session, check_index):
+def make_get_request(session,check_index):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
         url = settings.SERVICE_URL + settings.API + method

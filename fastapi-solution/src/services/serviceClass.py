@@ -21,7 +21,7 @@ class ServiceClass:
     def __init__(self, elastic: AsyncElasticsearch, redis: Redis):
         self.redis = redis
         self.elastic = elastic
-        self.PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5  # 5 минут
+        self.PERSON_CACHE_EXPIRE_IN_SECONDS = 50  # 1 минутa
         self.queries = elastic_queries
 
     async def _search_match_from_elastic(

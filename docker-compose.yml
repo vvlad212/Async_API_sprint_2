@@ -55,6 +55,7 @@ services:
       - discovery.type=single-node
     ports:
       - 9201:9200
+
   web_test:
     build: ./fastapi-solution
     depends_on:
@@ -80,7 +81,6 @@ services:
       - ./.env
 
 volumes:
-  cache_test:
   elasticsearch_test_data:
   cache:
   new_admin_panel_sprint_3_elasticsearch-data:

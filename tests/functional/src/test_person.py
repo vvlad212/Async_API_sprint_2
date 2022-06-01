@@ -1,4 +1,5 @@
 import json
+import time
 from typing import List
 
 import pytest
@@ -24,7 +25,9 @@ def create_bulk(data: List[dict], index_name: str):
 async def test_search_list(es_client, make_get_request):
     bulk_query = create_bulk(person_list, 'person')
     await es_client.bulk(bulk_query)
+    time.sleep(1)
     response = await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
+    time.sleep(1)
     result_response_list = {row['id']: row for row in response.body['records']}
     assert response.status == 200
     assert len(result_response_list) == len(person_list)
@@ -39,7 +42,6 @@ async def test_search_list_cached(es_client, redis_client, make_get_request):
     bulk_query = create_bulk(person_list, 'person')
     await es_client.bulk(bulk_query)
     await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
-
     response = await redis_client.get(f'person_list{int(len(person_list))}0')
     result_response_list = {json.loads(row)['id']: json.loads(row) for row in
                             json.loads(response.decode('utf8'))['data']}
@@ -57,7 +59,7 @@ async def test_search_detailed(make_get_request, es_client):
     await es_client.bulk(bulk_query)
 
     response = await make_get_request(f'/person/{person_id}')
-    await es_client.delete(index='person', id=person_id)
+    # await es_client.delete(index='person', id=person_id)
 
     assert response.status == 200
     assert len(response.body) == 2
@@ -74,7 +76,7 @@ async def test_search_detailed_cashed(make_get_request, es_client, redis_client)
     await es_client.bulk(bulk_query)
 
     await make_get_request(f'/person/{person_id}')
-    await es_client.delete(index='person', id=person_id)
+    # await es_client.delete(index='person', id=person_id)
 
     cashed_data = await redis_client.get(person_id)
     cashed_data = json.loads(cashed_data.decode('utf8'))

@@ -1,4 +1,5 @@
 import json
+import time
 from typing import List
 
 import pytest
@@ -25,7 +26,9 @@ def create_bulk(data: List[dict], index_name: str):
 async def test_search_list(es_client, make_get_request):
     bulk_query = create_bulk(genre_list, 'genres')
     await es_client.bulk(bulk_query)
+    time.sleep(1)
     response = await make_get_request(f'/genre/', params={'page[size]': int(len(genre_list))})
+    time.sleep(1)
     result_response_list = {row['id']: row for row in response.body['records']}
     assert response.status == 200
     assert len(result_response_list) == len(genre_list)
@@ -58,7 +61,7 @@ async def test_search_detailed(make_get_request, es_client):
     await es_client.bulk(bulk_query)
 
     response = await make_get_request(f'/genre/{genre_id}')
-    await es_client.delete(index='genres', id=genre_id)
+    # await es_client.delete(index='genres', id=genre_id)
 
     assert response.status == 200
     assert len(response.body) == 2
@@ -74,7 +77,7 @@ async def test_search_detailed_cashed(make_get_request, es_client, redis_client)
     await es_client.bulk(bulk_query)
 
     await make_get_request(f'/genre/{genre_id}')
-    await es_client.delete(index='genres', id=genre_id)
+    # await es_client.delete(index='genres', id=genre_id)
 
     cashed_data = await redis_client.get(genre_id)
     cashed_data = json.loads(cashed_data.decode('utf8'))
