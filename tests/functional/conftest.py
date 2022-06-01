@@ -33,19 +33,30 @@ async def redis_client():
     await rd_client.wait_closed()
 
 
+@pytest.fixture(scope='session')
 async def check_index(es_client):
+    """Copying indexes from prod elastic to test elastic
+
+    :param es_client:
+    :return:
+    """
     client_source = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_SOURCE}:{settings.ELASTIC_PORT_SOURCE}')
     client_target = es_client
     keys = await client_source.indices.get_alias()
     for ind in keys:
-        old_mapping = await client_source.indices.get_mapping(ind)
+        source_mapping = await client_source.indices.get_mapping(ind)
+        source_settings = await client_source.indices.get_settings(ind)
         if await client_target.indices.exists(ind):
             await es_client.indices.delete(index=ind)
         await client_target.indices.create(
             index=ind,
             body={
-                "settings": index_settings,
-                "mappings": old_mapping[ind]['mappings']}
+                "settings": {
+                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'],
+                    'analysis': source_settings[ind]['settings']['index']['analysis']
+                },
+                "mappings": source_mapping[ind]['mappings']
+            }
         )
 
     await client_source.close()
