@@ -4,11 +4,11 @@ import os
 REDIS_HOST = os.getenv('REDIS_HOST_TEST', 'redis-cache_test')
 REDIS_PORT = int(os.getenv('REDIS_PORT_TEST', 6379))
 
-# Настройки Elasticsearch
-ELASTIC_HOST = os.getenv('ES_HOST_TEST', '127.0.0.1')
-ELASTIC_PORT = int(os.getenv('ES_PORT_TEST', 9201))
+# Настройки Elasticsearch (test)
+ELASTIC_HOST_TEST = os.getenv('ES_HOST_TEST', '127.0.0.1')
+ELASTIC_PORT_TEST = int(os.getenv('ES_PORT_TEST', 9201))
 
-# Настройки Elasticsearch
+# Настройки Elasticsearch (prod)
 ELASTIC_HOST_SOURCE = os.getenv('ES_HOST', '127.0.0.1')
 ELASTIC_PORT_SOURCE = int(os.getenv('ES_PORT', 9200))
 

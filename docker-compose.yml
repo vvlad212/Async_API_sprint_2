@@ -42,8 +42,6 @@ services:
     image: redis:6.2-alpine
     container_name: test_redis
     restart: unless-stopped
-    volumes:
-      - cache:/data
 
   elasticsearch_test:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
@@ -65,8 +63,8 @@ services:
     env_file:
       - ./.env
     environment:
-      ES_HOST: "elasticsearch_test"
-      REDIS_HOST: "redis-cache_test"
+      ES_HOST: elasticsearch_test
+      REDIS_HOST: redis-cache_test
 
   api_tests:
     build: ./tests

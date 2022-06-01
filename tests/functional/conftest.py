@@ -64,7 +64,7 @@ async def check_index(es_client):
 
 @pytest.fixture(scope='session')
 async def es_client():
-    client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
+    client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_TEST}:{settings.ELASTIC_PORT_TEST}')
     yield client
     await client.close()
 
