@@ -1,32 +1,35 @@
-import asyncio
 import logging
 import time
-
-import aioredis
-
 from logging import config as logger_conf
 
-import settings
+from redis import Redis
+from redis.exceptions import ConnectionError
+
 from logger import log_conf
+from settings import REDIS_HOST, REDIS_PORT
 
 logger_conf.dictConfig(log_conf)
 logger = logging.getLogger(__name__)
 
+SLEEPING_TIME = 5  # sec
 
-async def redis_waiters():
+def is_redis_started(r: Redis):
+    logger.info(f"Checking redis connection {REDIS_HOST} {REDIS_PORT}...")
+    attempt_n = 0
     while True:
+        attempt_n += 1
+        logger.info(f"Attempt number {attempt_n}")
         try:
-            redis_conn = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT))
-            logger.info("Redis connection OK")
-            redis_conn.close()
-            await redis_conn.wait_closed()
-            return
-        except Exception as ex:
-            logger.info("Redis connection FAILED")
-            logger.error(ex)
-            time.sleep(5)
+            r.ping()
+        except (ConnectionError, ConnectionRefusedError):
+            time.sleep(SLEEPING_TIME)
+        else:
+            return True
+
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(redis_waiters())
-    loop.close()
+    r = Redis(host=REDIS_HOST, port=REDIS_PORT, socket_connect_timeout=1)
+
+    if is_redis_started(r):
+        logger.info("Successfully connected to redis.")
+    del r

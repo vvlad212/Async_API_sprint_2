@@ -1,39 +1,17 @@
 version: "3.9"
 
 services:
-  redis-cache:
-    image: redis:6.2-alpine
-    restart: always
-    volumes:
-      - cache:/data
-
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
     volumes:
       - new_admin_panel_sprint_3_elasticsearch-data:/usr/share/elasticsearch/data
+    logging:
+      driver: none
     environment:
       - xpack.monitoring.enabled=true
       - xpack.watcher.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
-
-  web:
-    build: ./fastapi-solution
-    expose:
-      - 8000
-    depends_on:
-      - elasticsearch
-      - redis-cache
-    env_file:
-      - ./.env
-
-  nginx:
-    build: ./nginx
-    ports:
-      - 8000:80
-    depends_on:
-      - web
 
   redis-cache_test:
     image: redis:6.2-alpine
@@ -43,8 +21,8 @@ services:
   elasticsearch_test:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
     container_name: test_es
-    volumes:
-      - elasticsearch_test_data:/usr/share/elasticsearch/data
+    logging:
+      driver: none
     environment:
       - xpack.monitoring.enabled=true
       - xpack.watcher.enabled=false
@@ -56,6 +34,8 @@ services:
     depends_on:
       - elasticsearch_test
       - redis-cache_test
+    ports:
+      - 8000:8000
     env_file:
       - ./.env
     environment:
@@ -76,8 +56,5 @@ services:
       - ./.env
 
 volumes:
-  elasticsearch_test_data:
-  cache:
   new_admin_panel_sprint_3_elasticsearch-data:
     external: true
-
