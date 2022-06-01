@@ -7,8 +7,7 @@ from typing import Optional
 from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
-import settings
-
+from .settings import *
 
 @dataclass
 class HTTPResponse:
@@ -26,7 +25,7 @@ def event_loop():
 
 @pytest.fixture(scope='session')
 async def redis_client():
-    rd_client = await aioredis.create_redis_pool((settings.REDIS_HOST, settings.REDIS_PORT))
+    rd_client = await aioredis.create_redis_pool((REDIS_HOST, REDIS_PORT))
     yield rd_client
     rd_client.close()
     await rd_client.wait_closed()
@@ -39,7 +38,7 @@ async def check_index(es_client):
     :param es_client:
     :return:
     """
-    client_source = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_SOURCE}:{settings.ELASTIC_PORT_SOURCE}')
+    client_source = AsyncElasticsearch(hosts=f'{ELASTIC_HOST_SOURCE}:{ELASTIC_PORT_SOURCE}')
     client_target = es_client
     keys = await client_source.indices.get_alias()
     for ind in keys:
@@ -63,7 +62,7 @@ async def check_index(es_client):
 
 @pytest.fixture(scope='session')
 async def es_client():
-    client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
+    client = AsyncElasticsearch(hosts=f'{ELASTIC_HOST}:{ELASTIC_PORT}')
     yield client
     await client.close()
 
@@ -79,7 +78,7 @@ async def session():
 def make_get_request(session):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
-        url = settings.SERVICE_URL + settings.API + method
+        url = SERVICE_URL + API + method
         async with session.get(url, params=params) as response:
             return HTTPResponse(
                 body=await response.json(),

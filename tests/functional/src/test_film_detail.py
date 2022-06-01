@@ -4,7 +4,7 @@ import uuid
 import pytest
 from elasticsearch import AsyncElasticsearch
 
-from testdata.film_test_data import film_test_doc
+from ..testdata.film_test_data import film_test_doc
 
 
 @pytest.mark.asyncio

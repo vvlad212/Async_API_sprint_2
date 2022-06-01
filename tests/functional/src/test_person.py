@@ -2,7 +2,7 @@ import json
 from typing import List
 
 import pytest
-from testdata.persondata_in import person_list, film_by_person
+from ..testdata.persondata_in import person_list, film_by_person
 
 
 def create_bulk(data: List[dict], index_name: str):
