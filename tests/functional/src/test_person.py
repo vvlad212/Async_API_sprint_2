@@ -21,7 +21,7 @@ def create_bulk(data: List[dict], index_name: str):
 
 
 @pytest.mark.asyncio
-async def test_search_list(es_client, make_get_request):
+async def test_search_list(es_client, make_get_request,check_index):
     bulk_query = create_bulk(person_list, 'person')
     await es_client.bulk(bulk_query)
     response = await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
