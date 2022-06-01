@@ -1,17 +1,22 @@
+import json
 from functools import lru_cache
 from typing import List, Optional, Tuple, Union
 
-from aioredis import Redis
-from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from db.elastic import get_elastic
-from db.redis import get_redis
+from db.elastic_queries import match_query
 from models.genre import Genres
-from services.serviceClass import ServiceClass
+from pkg.cache_storage.redis_storage import get_redis_storage_service
+from pkg.cache_storage.storage import ABSCacheStorage
+from pkg.elastic_storage.elastic_storage import get_elastic_storage_service
+from pkg.elastic_storage.storage import ABSElasticStorage
 
 
-class GenreService(ServiceClass):
+class GenreService:
+
+    def __init__(self, elastic: ABSElasticStorage, cache_storage: ABSCacheStorage):
+        self.cache_storage = cache_storage
+        self.elastic = elastic
 
     async def get_list(self,
                        page_size: int,
@@ -24,24 +29,29 @@ class GenreService(ServiceClass):
 
         Returns: Optional[List[Genres]]
         """
-        total, genre_list = await self._get_list_from_cache(f'genre_list{page_size}{offset_from}', Genres)
-        if not genre_list:
-            total, genre_list = await self._search_match_from_elastic(
-                match_query={"match_all": {}},
-                index_name='genres',
-                page_size=page_size,
-                offset_from=offset_from,
-                model=Genres
-            )
+        cashed_data = await self.cache_storage.get_data(key=f'genre_list{page_size}{offset_from}')
+        if cashed_data:
+            genre_list = [Genres.parse_raw(d) for d in json.loads(cashed_data.decode('utf8'))['data']]
+            total = json.loads(cashed_data.decode('utf8'))['total']
+            return total, genre_list
 
-            await self._put_result_list_to_cache(
-                cache_id=f'genre_list{page_size}{offset_from}',
-                cashed_list=genre_list,
-                total=total)
-        if not genre_list:
+        query = match_query(match_value={"match_all": {}}, offset_from=offset_from, page_size=page_size)
+        elastic_response = await self.elastic.search(index_name='genres', query=query)
+        total = elastic_response['hits']['total']['value']
+        person_list = [Genres(**p['_source']) for p in elastic_response['hits']['hits']]
+
+        redis_json = [elem.json() for elem in person_list]
+        redis_json = {
+            'total': total,
+            'data': redis_json
+        }
+        await self.cache_storage.set_data(key=f'genre_list{page_size}{offset_from}',
+                                          data=json.dumps(redis_json))
+
+        if not person_list:
             return None, None
 
-        return total, genre_list
+        return total, person_list
 
     async def get_by_id(self, genre_id: str) -> Optional[Genres]:
         """Получение жанров по ID
@@ -52,22 +62,25 @@ class GenreService(ServiceClass):
         Returns: Optional[Genres]
 
         """
-        genre = await self._get_from_cache(genre_id, Genres)
-        if not genre:
-            genre = await self._get_by_id_from_elastic(
-                genre_id,
-                'genres',
-                Genres)
 
-            if not genre:
-                return None
-            await self._put_result_to_cache(genre)
-        return genre
+        cashed_data = await self.cache_storage.get_data(key=genre_id)
+        if cashed_data:
+            person = Genres.parse_raw(cashed_data)
+            return person
+
+        doc = await self.elastic.get_by_id(id=genre_id, index_name='genres')
+
+        if not doc:
+            return None
+        person = Genres(**doc['_source'])
+        await self.cache_storage.set_data(key=f"film_{genre_id}", data=person.json())
+
+        return person
 
 
 @lru_cache()
 def get_genre_service(
-        redis: Redis = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        redis: ABSCacheStorage = Depends(get_redis_storage_service),
+        elastic: ABSElasticStorage = Depends(get_elastic_storage_service),
 ) -> GenreService:
     return GenreService(elastic, redis)

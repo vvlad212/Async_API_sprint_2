@@ -1,16 +1,16 @@
 from typing import List
 
 
-def create_match_query(match_query: dict,
-                       page: int,
-                       size: int,
-                       sort: dict = {}):
+def match_query(match_value: dict,
+                offset_from: int,
+                page_size: int,
+                sort: dict = {}):
     """формирование запроса для elastic.
 
     Args:
-        match_query:
-        page:
-        size:
+        match_value:
+        offset_from:
+        page_size:
         sort:
 
     Returns:
@@ -22,21 +22,21 @@ def create_match_query(match_query: dict,
             "must": [],
         }
     }
-    body['bool']['must'].append(match_query)
+    body['bool']['must'].append(match_value)
     query = {'query': body,
-             "from": page,
-             "size": size,
+             "from": offset_from,
+             "size": page_size,
              "sort": [sort],
              "aggs": {}
              }
     return query
 
 
-def create_nested_query(cond: str,
-                        nested_filter: List[dict],
-                        page: int,
-                        size: int,
-                        sort: dict = {}):
+def nested_query(condition: str,
+                 nested_filter: List[dict],
+                 offset_from: int,
+                 page_size: int,
+                 sort: dict = {}):
     def create_nested(filter_values: dict):
         return {
             "nested": {
@@ -54,11 +54,11 @@ def create_nested_query(cond: str,
     query = {
         "query": {
             "bool": {
-                cond: [create_nested(element) for element in nested_filter]
+                condition: [create_nested(element) for element in nested_filter]
             }
         },
-        "from": page,
-        "size": size,
+        "from": offset_from,
+        "size": page_size,
         "sort": [sort],
         "aggs": {}
     }
