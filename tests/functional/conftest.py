@@ -10,7 +10,6 @@ from elasticsearch import AsyncElasticsearch
 import settings
 
 
-
 @dataclass
 class HTTPResponse:
     body: dict
@@ -52,8 +51,11 @@ async def check_index(es_client):
             index=ind,
             body={
                 "settings": {
-                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'],
-                    'analysis': source_settings[ind]['settings']['index']['analysis']
+                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'] if
+                    'refresh_interval' in source_settings[ind]['settings']['index'] else "1s",
+
+                    'analysis': source_settings[ind]['settings']['index']['analysis'] if
+                    'analysis' in source_settings[ind]['settings']['index'] else {},
                 },
                 "mappings": source_mapping[ind]['mappings']
             }
@@ -64,7 +66,7 @@ async def check_index(es_client):
 
 @pytest.fixture(scope='session')
 async def es_client():
-    client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_TEST}:{settings.ELASTIC_PORT_TEST}')
+    client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
     yield client
     await client.close()
 
@@ -77,7 +79,7 @@ async def session():
 
 
 @pytest.fixture
-def make_get_request(session):
+def make_get_request(session, check_index):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
         url = settings.SERVICE_URL + settings.API + method
