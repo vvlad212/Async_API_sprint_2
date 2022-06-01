@@ -3,7 +3,7 @@ from typing import List
 
 import pytest
 
-from testdata.genredata_in import genre_list
+from ..testdata.genredata_in import genre_list
 
 
 def create_bulk(data: List[dict], index_name: str):
