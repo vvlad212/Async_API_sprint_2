@@ -8,7 +8,6 @@ from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
 import settings
-from testdata.ES_indexes import settings as index_settings
 
 
 @dataclass
