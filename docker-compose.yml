@@ -34,8 +34,6 @@ services:
     depends_on:
       - elasticsearch_test
       - redis-cache_test
-    ports:
-      - 8000:8000
     env_file:
       - ./.env
     environment:
