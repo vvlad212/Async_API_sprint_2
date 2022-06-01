@@ -31,7 +31,7 @@ async def redis_client():
     await rd_client.wait_closed()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='module')
 async def check_index(es_client):
     """Copying indexes from prod elastic to test elastic
 
@@ -50,13 +50,15 @@ async def check_index(es_client):
             index=ind,
             body={
                 "settings": {
-                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'],
-                    'analysis': source_settings[ind]['settings']['index']['analysis']
+                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'] if
+                    'refresh_interval' in source_settings[ind]['settings']['index'] else "1s",
+
+                    'analysis': source_settings[ind]['settings']['index']['analysis'] if
+                    'analysis' in source_settings[ind]['settings']['index'] else {},
                 },
                 "mappings": source_mapping[ind]['mappings']
             }
         )
-
     await client_source.close()
 
 
