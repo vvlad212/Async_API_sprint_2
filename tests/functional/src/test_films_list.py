@@ -5,6 +5,10 @@ import pytest
 MOVIES_INDEX = "movies"
 
 
+@pytest.fixture(scope='module', autouse=True)
+async def fix_test():
+    print('!!!!!!!!!!!!!!!!!!!!!!!RUN')
+
 # list for bulk
 # lst.append(
 #                 {
@@ -15,10 +19,12 @@ MOVIES_INDEX = "movies"
 #                 }
 #             )
 
-# TODO: РАЗБЕРИСЬ КАК ДОБАВИТЬ ФИКСТУРУ К ВЫБОРОЧНЫМ ТЕСТАМ ПО СОЗДАНИЮ 
+# TODO: РАЗБЕРИСЬ КАК ДОБАВИТЬ ФИКСТУРУ К ВЫБОРОЧНЫМ ТЕСТАМ ПО СОЗДАНИЮ
 # СПИСКА ФИЛЬМОВ В ЭЛАСТИКЕ
+
+
 @pytest.mark.asyncio
-async def test_get_films_list(es_client: AsyncElasticsearch, redis_client, make_get_request):
+async def test_get_films_list(es_client: AsyncElasticsearch, redis_client, make_get_request, fix_test):
     """
     Test GET /films positive test for whole films list with pagination
     """
@@ -43,7 +49,7 @@ async def test_get_films_list(es_client: AsyncElasticsearch, redis_client, make_
 
 
 @pytest.mark.asyncio
-async def test_get_filtered_films_list(es_client: AsyncElasticsearch, redis_client, make_get_request):
+async def test_get_filtered_films_list(es_client: AsyncElasticsearch, redis_client, make_get_request, fix_test):
     """
     Test GET /films with filters by film name and genres
     (sort_by asc rating)
@@ -65,7 +71,25 @@ async def test_get_films_list_negative_page_number(make_get_request):
     """
     Test GET /films with validation error by page_number
     """
-    pass
+    response = await make_get_request(f'/films', params={'page_number': -1})
+
+    assert response.status == 422, "wrong validation error page number status"
+    expected_res = {
+        "detail": [
+            {
+                "loc": [
+                    "query",
+                    "page_number"
+                ],
+                "msg": "ensure this value is greater than 0",
+                "type": "value_error.number.not_gt",
+                "ctx": {
+                    "limit_value": 0
+                }
+            }
+        ]
+    }
+    assert response.body == expected_res, "wrong validation error page number body"
 
 
 @pytest.mark.asyncio
@@ -73,7 +97,25 @@ async def test_get_films_list_negative_page_size(make_get_request):
     """
     Test GET /films with validation error by page_size
     """
-    pass
+    response = await make_get_request(f'/films', params={'page_size': -1})
+
+    assert response.status == 422, "wrong validation error page size status"
+    expected_res = {
+        "detail": [
+            {
+                "loc": [
+                    "query",
+                    "page_size"
+                ],
+                "msg": "ensure this value is greater than 0",
+                "type": "value_error.number.not_gt",
+                "ctx": {
+                    "limit_value": 0
+                }
+            }
+        ]
+    }
+    assert response.body == expected_res, "wrong validation error page size body"
 
     # name: Union[str, None] = Query(
     #     default=None,
