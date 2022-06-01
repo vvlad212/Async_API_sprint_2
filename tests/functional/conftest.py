@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
 import settings
-from testdata.ES_indexes import mappings
+from testdata.ES_indexes import settings as index_settings
 
 
 @dataclass
@@ -16,15 +16,6 @@ class HTTPResponse:
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
-
-
-@pytest.fixture(scope='session', params=["genre", "person"])
-def check_index(es_client, params):
-    if not es_client.indices.exists(params):
-        es_client.indices.create(
-            index=params,
-            body=mappings[params]
-        )
 
 
 @pytest.fixture(scope='session')
@@ -43,8 +34,38 @@ async def redis_client():
 
 
 @pytest.fixture(scope='session')
+async def check_index(es_client):
+    """Copying indexes from prod elastic to test elastic
+
+    :param es_client:
+    :return:
+    """
+    client_source = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST_SOURCE}:{settings.ELASTIC_PORT_SOURCE}')
+    client_target = es_client
+    keys = await client_source.indices.get_alias()
+    for ind in keys:
+        source_mapping = await client_source.indices.get_mapping(ind)
+        source_settings = await client_source.indices.get_settings(ind)
+        if await client_target.indices.exists(ind):
+            await es_client.indices.delete(index=ind)
+        await client_target.indices.create(
+            index=ind,
+            body={
+                "settings": {
+                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'],
+                    'analysis': source_settings[ind]['settings']['index']['analysis']
+                },
+                "mappings": source_mapping[ind]['mappings']
+            }
+        )
+
+    await client_source.close()
+
+
+@pytest.fixture(scope='session')
 async def es_client():
-    client = AsyncElasticsearch(hosts='127.0.0.1:9200')
+    client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
+    await check_index(client)
     yield client
     await client.close()
 
