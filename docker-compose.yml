@@ -28,6 +28,8 @@ services:
       - xpack.watcher.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
+    ports:
+      - 9201:9200
 
   web_test:
     build: ./fastapi-solution
