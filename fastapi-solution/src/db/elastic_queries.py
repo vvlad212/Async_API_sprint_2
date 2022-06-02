@@ -20,6 +20,7 @@ def match_query(match_value: dict,
     body = {
         "bool": {
             "must": [],
+            "should": []
         }
     }
     body['bool']['must'].append(match_value)
@@ -30,6 +31,7 @@ def match_query(match_value: dict,
              "aggs": {}
              }
     return query
+
 
 
 def nested_query(condition: str,
