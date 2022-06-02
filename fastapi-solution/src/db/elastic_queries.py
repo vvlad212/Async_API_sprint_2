@@ -1,10 +1,11 @@
 from typing import List
 
 
-def match_query(match_value: dict,
-                offset_from: int,
-                page_size: int,
-                sort: dict = {}):
+def match_query(
+        match_value: dict,
+        offset_from: int,
+        page_size: int,
+        sort: dict = {}):
     """формирование запроса для elastic.
 
     Args:
@@ -33,12 +34,12 @@ def match_query(match_value: dict,
     return query
 
 
-
-def nested_query(condition: str,
-                 nested_filter: List[dict],
-                 offset_from: int,
-                 page_size: int,
-                 sort: dict = {}):
+def nested_query(
+        condition: str,
+        nested_filter: List[dict],
+        offset_from: int,
+        page_size: int,
+        sort: dict = {}):
     def create_nested(filter_values: dict):
         return {
             "nested": {
@@ -62,6 +63,5 @@ def nested_query(condition: str,
         "from": offset_from,
         "size": page_size,
         "sort": [sort],
-        "aggs": {}
     }
     return query

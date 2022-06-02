@@ -31,27 +31,26 @@ class GenreService:
         """
         cashed_data = await self.cache_storage.get_data(key=f'genre_list{page_size}{offset_from}')
         if cashed_data:
-            genre_list = [Genres.parse_raw(d) for d in json.loads(cashed_data.decode('utf8'))['data']]
+            genre_list = [Genres(**d['_source']) for d in json.loads(cashed_data.decode('utf8'))['data']]
             total = json.loads(cashed_data.decode('utf8'))['total']
             return total, genre_list
 
         query = match_query(match_value={"match_all": {}}, offset_from=offset_from, page_size=page_size)
         elastic_response = await self.elastic.search(index_name='genres', query=query)
         total = elastic_response['hits']['total']['value']
-        person_list = [Genres(**p['_source']) for p in elastic_response['hits']['hits']]
+        genre_list = [Genres(**p['_source']) for p in elastic_response['hits']['hits']]
 
-        redis_json = [elem.json() for elem in person_list]
         redis_json = {
             'total': total,
-            'data': redis_json
+            'data': elastic_response['hits']['hits']
         }
         await self.cache_storage.set_data(key=f'genre_list{page_size}{offset_from}',
                                           data=json.dumps(redis_json))
 
-        if not person_list:
+        if not genre_list:
             return None, None
 
-        return total, person_list
+        return total, genre_list
 
     async def get_by_id(self, genre_id: str) -> Optional[Genres]:
         """Получение жанров по ID
@@ -65,17 +64,17 @@ class GenreService:
 
         cashed_data = await self.cache_storage.get_data(key=genre_id)
         if cashed_data:
-            person = Genres.parse_raw(cashed_data)
-            return person
+            genre = Genres.parse_raw(cashed_data)
+            return genre
 
         doc = await self.elastic.get_by_id(id=genre_id, index_name='genres')
 
         if not doc:
             return None
-        person = Genres(**doc['_source'])
-        await self.cache_storage.set_data(key=f"film_{genre_id}", data=person.json())
+        genre = Genres(**doc['_source'])
+        await self.cache_storage.set_data(key=f"{genre_id}", data=json.dumps(doc['_source']))
 
-        return person
+        return genre
 
 
 @lru_cache()
