@@ -21,7 +21,7 @@ async def create_bulk(data: List[dict], index_name: str):
 
 
 @pytest.mark.asyncio
-async def test_search_list(es_client, make_get_request, init_db):
+async def test_search_list(es_client, make_get_request):
     res = await es_client.bulk(await create_bulk(person_list, 'person'))
     if res['errors']:
         response = await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
@@ -35,7 +35,7 @@ async def test_search_list(es_client, make_get_request, init_db):
 
 
 @pytest.mark.asyncio
-async def test_search_list_cached(es_client, redis_client, make_get_request, init_db):
+async def test_search_list_cached(es_client, redis_client, make_get_request):
     res = await es_client.bulk(await create_bulk(person_list, 'person'))
     if res['errors']:
         await make_get_request(f'/person/', params={'page[size]': int(len(person_list))})
@@ -49,7 +49,7 @@ async def test_search_list_cached(es_client, redis_client, make_get_request, ini
 
 
 @pytest.mark.asyncio
-async def test_search_detailed(make_get_request, es_client, init_db):
+async def test_search_detailed(make_get_request, es_client):
     person_id = str(person_list[0]['id'])
     full_name = person_list[0]['full_name']
     res = await es_client.bulk(await create_bulk([person_list[0]], 'person'))
@@ -62,7 +62,7 @@ async def test_search_detailed(make_get_request, es_client, init_db):
 
 
 @pytest.mark.asyncio
-async def test_search_detailed_cashed(make_get_request, es_client, redis_client, init_db):
+async def test_search_detailed_cashed(make_get_request, es_client, redis_client):
     person_id = str(person_list[0]['id'])
     full_name = person_list[0]['full_name']
 

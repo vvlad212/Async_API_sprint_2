@@ -22,7 +22,7 @@ async def create_bulk(data: List[dict], index_name: str):
 
 
 @pytest.mark.asyncio
-async def test_search_list(es_client, make_get_request, init_db):
+async def test_search_list(es_client, make_get_request):
     res = await es_client.bulk(await create_bulk(genre_list, 'genres'))
     if res['errors']:
         response = await make_get_request(f'/genre/', params={'page[size]': int(len(genre_list))})
@@ -36,7 +36,7 @@ async def test_search_list(es_client, make_get_request, init_db):
 
 
 @pytest.mark.asyncio
-async def test_search_list_cached(es_client, redis_client, make_get_request, init_db):
+async def test_search_list_cached(es_client, redis_client, make_get_request):
     res = await es_client.bulk(await create_bulk(genre_list, 'genres'))
     if res['errors']:
         await make_get_request(f'/genre/', params={'page[size]': int(len(genre_list))})
@@ -50,7 +50,7 @@ async def test_search_list_cached(es_client, redis_client, make_get_request, ini
 
 
 @pytest.mark.asyncio
-async def test_search_detailed(make_get_request, es_client, init_db):
+async def test_search_detailed(make_get_request, es_client):
     genre_id = str(genre_list[0]['id'])
     name = genre_list[0]['name']
     res = await es_client.bulk(await create_bulk([genre_list[0]], 'genres'))
@@ -65,7 +65,7 @@ async def test_search_detailed(make_get_request, es_client, init_db):
 
 
 @pytest.mark.asyncio
-async def test_search_detailed_cashed(make_get_request, es_client, redis_client, init_db):
+async def test_search_detailed_cashed(make_get_request, es_client, redis_client):
     genre_id = str(genre_list[0]['id'])
     name = genre_list[0]['name']
     res = await es_client.bulk(await create_bulk([genre_list[0]], 'genres'))
