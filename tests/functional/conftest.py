@@ -32,8 +32,7 @@ async def redis_client():
     await rd_client.wait_closed()
 
 
-@pytest.fixture(scope='module')
-async def check_index(es_client):
+async def create_index(es_client):
     """Copying indexes from prod elastic to test elastic
 
     :param es_client:
@@ -63,6 +62,25 @@ async def check_index(es_client):
     await client_source.close()
 
 
+async def delete_index(es_client):
+    """Copying indexes from prod elastic to test elastic
+
+    :param es_client:
+    :return:
+    """
+    client_target = es_client
+    keys = await client_target.indices.get_alias()
+    for ind in keys:
+        await es_client.indices.delete(index=ind)
+
+
+@pytest.fixture
+async def init_db(es_client):
+    await create_index(es_client)
+    yield
+    await delete_index(es_client)
+
+
 @pytest.fixture(scope='session')
 async def es_client():
     client = AsyncElasticsearch(hosts=f'{settings.ELASTIC_HOST}:{settings.ELASTIC_PORT}')
@@ -78,7 +96,7 @@ async def session():
 
 
 @pytest.fixture
-def make_get_request(session,check_index):
+def make_get_request(session):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
         url = settings.SERVICE_URL + settings.API + method
