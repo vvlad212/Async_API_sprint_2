@@ -109,7 +109,7 @@ def make_get_request(session):
         params = params or {}
         url = SERVICE_URL + API + method
         async with session.get(url, params=params) as response:
-            logger.info(f"Get resp from {response.url}")
+            logger.info(f"Got resp from {response.url}")
             return HTTPResponse(
                 body=await response.json(),
                 headers=response.headers,
