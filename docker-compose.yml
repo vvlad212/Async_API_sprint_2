@@ -34,6 +34,8 @@ services:
     depends_on:
       - elasticsearch_test
       - redis-cache_test
+    logging:
+      driver: none
     env_file:
       - ./.env
     environment:

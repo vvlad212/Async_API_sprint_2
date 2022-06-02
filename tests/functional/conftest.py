@@ -2,12 +2,16 @@ import asyncio
 import aioredis
 import aiohttp
 import pytest
+from logging import getLogger
 
 from typing import Optional
 from dataclasses import dataclass
 from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
 from .settings import *
+
+logger = getLogger(__name__)
+
 
 @dataclass
 class HTTPResponse:
@@ -31,40 +35,17 @@ async def redis_client():
     await rd_client.wait_closed()
 
 
-@pytest.fixture(scope='module')
-async def check_index(es_client):
-    """Copying indexes from prod elastic to test elastic
-
-    :param es_client:
-    :return:
-    """
-    client_source = AsyncElasticsearch(hosts=f'{ELASTIC_HOST_SOURCE}:{ELASTIC_PORT_SOURCE}')
-    client_target = es_client
-    keys = await client_source.indices.get_alias()
-    for ind in keys:
-        source_mapping = await client_source.indices.get_mapping(ind)
-        source_settings = await client_source.indices.get_settings(ind)
-        if await client_target.indices.exists(ind):
-            await es_client.indices.delete(index=ind)
-        await client_target.indices.create(
-            index=ind,
-            body={
-                "settings": {
-                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'] if
-                    'refresh_interval' in source_settings[ind]['settings']['index'] else "1s",
-
-                    'analysis': source_settings[ind]['settings']['index']['analysis'] if
-                    'analysis' in source_settings[ind]['settings']['index'] else {},
-                },
-                "mappings": source_mapping[ind]['mappings']
-            }
-        )
-    await client_source.close()
-
-
 @pytest.fixture(scope='session')
 async def es_client():
     client = AsyncElasticsearch(hosts=f'{ELASTIC_HOST}:{ELASTIC_PORT}')
+    yield client
+    await client.close()
+
+
+@pytest.fixture(scope='session')
+async def es_client_source():
+    client = AsyncElasticsearch(
+        hosts=f'{ELASTIC_HOST_SOURCE}:{ELASTIC_PORT_SOURCE}')
     yield client
     await client.close()
 
@@ -76,12 +57,59 @@ async def session():
     await session.close()
 
 
+@pytest.fixture(scope='session')
+async def index_list(es_client_source):
+    yield await es_client_source.indices.get_alias()
+
+
+@pytest.fixture(scope='session')
+async def create_indexes(
+    es_client: AsyncElasticsearch,
+    es_client_source: AsyncElasticsearch,
+    index_list: list
+):
+    async def inner():
+        for ind in index_list:
+            source_mapping = await es_client_source.indices.get_mapping(ind)
+            source_settings = await es_client_source.indices.get_settings(ind)
+            await es_client.indices.create(
+                index=ind,
+                body={
+                    "settings": {
+                        'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'],
+                        'analysis': source_settings[ind]['settings']['index']['analysis']
+                    },
+                    "mappings": source_mapping[ind]['mappings']
+                }
+            )
+    return inner
+
+
+@pytest.fixture(scope='session')
+async def remove_indexes(
+    es_client: AsyncElasticsearch,
+    index_list: list
+):
+    async def inner():
+        for ind in index_list:
+            await es_client.indices.delete(index=ind, ignore=[400, 404])
+    return inner
+
+
+@pytest.fixture(scope='session', autouse=True)
+async def init_db(create_indexes, remove_indexes):
+    await create_indexes()
+    yield session
+    await remove_indexes()
+
+
 @pytest.fixture
 def make_get_request(session):
     async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
         url = SERVICE_URL + API + method
         async with session.get(url, params=params) as response:
+            logger.info(f"Got resp from {response.url}")
             return HTTPResponse(
                 body=await response.json(),
                 headers=response.headers,
