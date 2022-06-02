@@ -12,15 +12,11 @@ services:
       - xpack.watcher.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
-    ports:
-      - 9200:9200
 
   redis-cache_test:
     image: redis:6.2-alpine
     container_name: test_redis
     restart: unless-stopped
-    ports:
-      - 6379:6379
 
   elasticsearch_test:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
@@ -32,6 +28,8 @@ services:
       - xpack.watcher.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
+    ports:
+      - 9201:9200
 
   web_test:
     build: ./fastapi-solution
