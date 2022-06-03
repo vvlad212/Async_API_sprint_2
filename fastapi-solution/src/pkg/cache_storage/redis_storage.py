@@ -18,19 +18,27 @@ class RedisCacheService(ABSCacheStorage):
 
     async def get_data(self, key: str) -> Optional[Union[str, bytes]]:
         logger.info(f"getting data from redis by key: {key}")
-        data = await self.redis.get(key)
-        if data:
+        try:
+            data = await self.redis.get(key)
+        except Exception:
+            logger.exception("error while getting data from redis")
+        else:
+            if not data:
+                logger.info(f"data not found in redis.")
             return data
-        logger.info(f"data not found in redis.")
 
     async def set_data(self, key: str, data: Union[str, bytes]):
         logger.info(f"inserting data to redis cache with key: {key}")
-        await self.redis.set(
-            key,
-            data,
-            expire=EXPIRATION_TIME_SECONDS
-        )
-        logger.info(f"successfully added to reddis.")
+        try:
+            await self.redis.set(
+                key,
+                data,
+                expire=EXPIRATION_TIME_SECONDS
+            )
+        except Exception:
+            logger.exception("error while inserting data in redis")
+        else:
+            logger.info(f"successfully added to reddis.")
 
 
 @lru_cache()
