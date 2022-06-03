@@ -49,6 +49,7 @@ services:
       && python3 /functional/utils/wait_for_redis.py
       && pytest /functional/src/ -s --setup-show -p no:warnings"
     depends_on:
+      - elasticsearch
       - elasticsearch_test
       - redis-cache_test
       - web_test
