@@ -36,7 +36,7 @@ class PersonService:
         if not doc:
             return None
         person = Person(**doc['_source'])
-        await self.cache_storage.set_data(key=f"film_{person_id}", data=json.dumps(doc['_source']))
+        await self.cache_storage.set_data(key=f"{person_id}", data=json.dumps(doc['_source']))
 
         return person
 
