@@ -8,16 +8,15 @@ from models.film import FilmFull
 from models.person import Person
 from pkg.cache_storage.redis_storage import get_redis_storage_service
 from pkg.cache_storage.storage import ABSCacheStorage
-
-from pkg.elastic_storage.elastic_storage import get_elastic_storage_service
-from pkg.elastic_storage.storage import ABSElasticStorage
+from pkg.storage.elastic_storage import get_elastic_storage_service
+from pkg.storage.storage import ABSStorage
 
 from db.elastic_queries import *
 
 
 class PersonService:
 
-    def __init__(self, elastic: ABSElasticStorage, cache_storage: ABSCacheStorage):
+    def __init__(self, elastic: ABSStorage, cache_storage: ABSCacheStorage):
         self.cache_storage = cache_storage
         self.elastic = elastic
 
@@ -162,6 +161,6 @@ class PersonService:
 @lru_cache()
 def get_person_service(
         redis: ABSCacheStorage = Depends(get_redis_storage_service),
-        elastic: ABSElasticStorage = Depends(get_elastic_storage_service),
+        elastic: ABSStorage = Depends(get_elastic_storage_service),
 ) -> PersonService:
     return PersonService(elastic, redis)

@@ -1,21 +1,18 @@
-import json
 import logging
 from functools import lru_cache
-from typing import Optional, Union, Dict, Tuple
+from typing import Union, Dict
 
 from elasticsearch import Elasticsearch, NotFoundError
 
 from db.elastic import get_elastic
 from fastapi import Depends
-from pkg.elastic_storage.storage import ABSElasticStorage
+from pkg.storage.storage import ABSStorage
 from db import elastic_queries
 
 logger = logging.getLogger(__name__)
 
-EXPIRATION_TIME_SECONDS = 60 * 5
 
-
-class ElasticService(ABSElasticStorage):
+class ElasticService(ABSStorage):
     def __init__(self, elastic: Elasticsearch) -> None:
         self.elastic = elastic
         self.queries = elastic_queries
@@ -29,9 +26,11 @@ class ElasticService(ABSElasticStorage):
         :param index_name:
         :return:
         """
+        logger.info(f"getting data from elastic index:{index_name} by id:{id}")
         try:
             doc = await self.elastic.get(index_name, id)
         except NotFoundError:
+            logger.info(f"data not found in elastic.")
             return None
         return doc
 
@@ -45,10 +44,12 @@ class ElasticService(ABSElasticStorage):
         :param index_name:
         :return:
         """
+        logger.info(f"searching data in elastic index:{index_name}")
         try:
-            doc = await self.elastic.search(index=index_name,
-                                            body=query
-                                            )
+            doc = await self.elastic.search(
+                index=index_name,
+                body=query
+            )
         except NotFoundError:
             return None
         return doc

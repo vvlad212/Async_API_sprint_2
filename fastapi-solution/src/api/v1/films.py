@@ -63,7 +63,7 @@ class FilmRating(str, Enum):
         },
     }
 )
-async def get_films(
+async def get_films_list(
         name: Union[str, None] = Query(
             default=None,
             title="Name of the film(s)",
@@ -95,7 +95,7 @@ async def get_films(
     """
     Get filtered films list with pagination.
     """
-    total_count, films = await film_service.get_films(
+    total_count, films = await film_service.get_list(
         name,
         genres,
         sort,

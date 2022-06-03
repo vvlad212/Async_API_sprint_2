@@ -3,21 +3,28 @@ import logging
 from functools import lru_cache
 from typing import List, Optional, Tuple
 
-from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
-from db.elastic import get_elastic
+from .service import ABSService
 from models.film import FilmFull
 from pkg.cache_storage.redis_storage import get_redis_storage_service
 from pkg.cache_storage.storage import ABSCacheStorage
+from pkg.storage.elastic_storage import get_elastic_storage_service
+from pkg.storage.storage import ABSStorage
 
 logger = logging.getLogger(__name__)
 
+FILMS_INDEX_NAME = "movies"
 
-class FilmService:
-    def __init__(self, elastic: AsyncElasticsearch, cache_storage: ABSCacheStorage):
+
+class FilmService(ABSService):
+    def __init__(
+        self,
+        storage: ABSStorage,
+        cache_storage: ABSCacheStorage
+    ):
         self.cache_storage = cache_storage
-        self.elastic = elastic
+        self.storage = storage
 
     async def get_by_id(self, film_id: str) -> Optional[FilmFull]:
         """
@@ -28,24 +35,21 @@ class FilmService:
         logger.info("Trying to get film from cache.")
         film_data = await self.cache_storage.get_data(f"film_{film_id}")
         if film_data:
-            return FilmFull.parse_raw(film_data)
+            return FilmFull(**json.loads(film_data))
 
         logger.info("Trying to get film from elastic.")
-        film = await self._get_film_from_elastic(film_id)
-        if film:
-            await self.cache_storage.set_data(f"film_{film_id}", film.json())
-            return film
+        film_doc = await self.storage.get_by_id(film_id, FILMS_INDEX_NAME)
+        if film_doc:
+            logger.info("Caching film that have been found in storage.")
+            await self.cache_storage.set_data(
+                f"film_{film_id}",
+                json.dumps(film_doc['_source'])
+            )
+            return FilmFull(**film_doc['_source'])
 
         return None
 
-    async def _get_film_from_elastic(self, film_id: str) -> Optional[FilmFull]:
-        try:
-            doc = await self.elastic.get('movies', film_id)
-        except NotFoundError:
-            return None
-        return FilmFull(**doc['_source'])
-
-    async def get_films(
+    async def get_list(
             self,
             name: Optional[str],
             genres: Optional[List[str]],
@@ -56,7 +60,7 @@ class FilmService:
         """
         Get filtred filmworks list from cache or es
         """
-        logger.info("FilmService get_films started...")
+        logger.info("FilmService get films list started...")
 
         logger.info(f"Trying to get films from cache.")
         cache_key = "films_{}".format(
@@ -89,12 +93,15 @@ class FilmService:
             page_number,
             page_size
         )
-        doc = await self.elastic.search(index='movies', body=query_body)
-        total_count = doc.get('hits').get('total').get('value')
-        hits_sources = [hit['_source'] for hit in doc['hits'].get('hits', [])]
+        doc = await self.storage.search(index_name='movies', query=query_body)
+        total_count = doc.get('hits', {}).get('total', {}).get('value')
+        hits_sources = [
+            hit['_source'] for hit in doc.get('hits', {}).get('hits', [])
+        ]
         films = [FilmFull(**hit_source) for hit_source in hits_sources]
 
         if films:
+            logger.info("Caching films that have been found in storage.")
             await self.cache_storage.set_data(
                 cache_key,
                 json.dumps({"total_count": total_count,
@@ -174,6 +181,6 @@ class FilmService:
 @lru_cache()
 def get_film_service(
         cache_storage: ABSCacheStorage = Depends(get_redis_storage_service),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        elastic: ABSStorage = Depends(get_elastic_storage_service),
 ) -> FilmService:
-    return FilmService(elastic, cache_storage)
+    return FilmService(storage=elastic, cache_storage=cache_storage)
