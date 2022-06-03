@@ -22,6 +22,7 @@ person_list = [
     {'full_name': 'Ian McDiarmid', 'id': UUID('7214e401-bb43-4da2-9e7a-cd6ca31ee8ca')},
     {'full_name': 'Jonathan Hales', 'id': UUID('8c220eeb-8022-44d5-8435-1f8edf258ac7')},
     {'full_name': 'Christopher Lee', 'id': UUID('ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a19')},
+    {'full_name': 'Christopher Leedov', 'id': UUID('ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a00')},
     {'full_name': 'Roberto Orci', 'id': UUID('9b58c99a-e5a3-4f24-8f67-a038665758d6')},
     {'full_name': 'Alex Kurtzman', 'id': UUID('82b7dffe-6254-4598-b6ef-5be747193946')},
     {'full_name': 'Gene Roddenberry', 'id': UUID('6960e2ca-889f-41f5-b728-1e7313e54d6c')},
@@ -236,4 +237,20 @@ response_film_by_id = {
             "imdb_rating": 5.2
         }
     ]
+}
+
+search_by_name = {
+  "total_count": 2,
+  "current_from": 0,
+  "page_size": 10,
+  "records": [
+    {
+      "id": "ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a19",
+      "full_name": "Christopher Lee"
+    },
+    {
+      "id": "ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a00",
+      "full_name": "Christopher Leedov"
+    }
+  ]
 }
