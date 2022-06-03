@@ -41,7 +41,7 @@ async def create_bulk(es_client, redis_client):
 
 
 @pytest.mark.asyncio
-async def test_search_filmbyname(es_client, make_get_request):
+async def test_search_film_by_person_id(es_client, make_get_request):
     response = await make_get_request(f'/person/8b223e9f-4782-489c-a277-80375aafdced/film',
                                       params={'page[size]': 100})
 
@@ -54,7 +54,7 @@ async def test_search_filmbyname(es_client, make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_search_filmbyname_cashed(es_client, redis_client, make_get_request):
+async def test_search_film_by_person_id_cashed(es_client, redis_client, make_get_request):
     await make_get_request(f'/person/8b223e9f-4782-489c-a277-80375aafdced/film',
                            params={'page[size]': 100})
 
@@ -67,3 +67,15 @@ async def test_search_filmbyname_cashed(es_client, redis_client, make_get_reques
         for keys in row.keys():
             assert row[keys] == result_response_list[str(row['id'])][keys]
 
+
+@pytest.mark.asyncio
+async def test_search_person_name(es_client, make_get_request):
+    response = await make_get_request(f'/person/8b223e9f-4782-489c-a277-80375aafdced/film',
+                                      params={'page[size]': 100})
+
+    result_response_list = {row['id']: row for row in response.body['records']}
+    assert response.status == 200
+    assert response_film_by_id['total_count'] == response.body['total_count']
+    for row in response_film_by_id['records']:
+        for keys in row.keys():
+            assert row[keys] == result_response_list[str(row['id'])][keys]
