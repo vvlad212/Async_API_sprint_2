@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 
@@ -12,7 +12,7 @@ router = APIRouter()
 
 @router.get('/{person_id}', response_model=Person)
 async def person_details(
-        person_id: Union[str, None] = Query(
+        person_id: Optional[str] = Query(
             title="Person id",
             default=None,
         ),
@@ -39,7 +39,7 @@ async def person_list(
             title="Page size",
             alias="page[size]"
         ),
-        offset_from: Union[int] = Query(
+        offset_from: Optional[int] = Query(
             default=0,
             title="offset from the first value",
             alias="page[number]"
@@ -67,7 +67,7 @@ async def person_list(
 
 @router.get('/search/{person_name}', response_model=ListResponseModel)
 async def person_by_name(
-        name: Union[str, None] = Query(
+        name: Optional[str] = Query(
             default=None,
             title="Person name",
             min_length=3,
@@ -105,7 +105,7 @@ async def person_by_name(
 
 @router.get('/{person_id}/film', response_model=ListResponseModel)
 async def film_by_person_id(
-        person_id: Union[str, None] = Query(
+        person_id: Optional[str] = Query(
             default=None,
             title="Person name",
             min_length=3,
@@ -115,7 +115,7 @@ async def film_by_person_id(
             title="Page size",
             alias="page[size]"
         ),
-        offset_from: Union[int] = Query(
+        offset_from: Optional[int] = Query(
             default=0,
             title="offset from the first value",
             alias="page[number]"
