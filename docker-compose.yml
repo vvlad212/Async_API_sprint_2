@@ -29,6 +29,7 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
 
+
   web_test:
     build: ./fastapi-solution
     depends_on:
