@@ -22,6 +22,7 @@ person_list = [
     {'full_name': 'Ian McDiarmid', 'id': UUID('7214e401-bb43-4da2-9e7a-cd6ca31ee8ca')},
     {'full_name': 'Jonathan Hales', 'id': UUID('8c220eeb-8022-44d5-8435-1f8edf258ac7')},
     {'full_name': 'Christopher Lee', 'id': UUID('ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a19')},
+    {'full_name': 'Christopher Leedov', 'id': UUID('ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a00')},
     {'full_name': 'Roberto Orci', 'id': UUID('9b58c99a-e5a3-4f24-8f67-a038665758d6')},
     {'full_name': 'Alex Kurtzman', 'id': UUID('82b7dffe-6254-4598-b6ef-5be747193946')},
     {'full_name': 'Gene Roddenberry', 'id': UUID('6960e2ca-889f-41f5-b728-1e7313e54d6c')},
@@ -54,11 +55,202 @@ person_list = [
 
 film_by_person = [
     {'id': '3d825f60-9fff-4dfe-b294-1a45fa1e115d', 'title': 'Star Wars: Episode IV - A New Hope', 'imdb_rating': 8.6},
-    {'id': '0312ed51-8833-413f-bff5-0e139c11264a', 'title': 'Star Wars: Episode V - The Empire Strikes Back','imdb_rating': 8.7},
-    {'id': '025c58cd-1b7e-43be-9ffb-8571a613579b', 'title': 'Star Wars: Episode VI - Return of the Jedi','imdb_rating': 8.3},
-    {'id': 'cddf9b8f-27f9-4fe9-97cb-9e27d4fe3394', 'title': 'Star Wars: Episode VII - The Force Awakens','imdb_rating': 7.9},
-    {'id': '12a8279d-d851-4eb9-9d64-d690455277cc', 'title': 'Star Wars: Episode VIII - The Last Jedi','imdb_rating': 7.0},
-    {'id': '46f15353-2add-415d-9782-fa9c5b8083d5', 'title': 'Star Wars: Episode IX - The Rise of Skywalker','imdb_rating': 6.7},
+    {'id': '0312ed51-8833-413f-bff5-0e139c11264a', 'title': 'Star Wars: Episode V - The Empire Strikes Back',
+     'imdb_rating': 8.7},
+    {'id': '025c58cd-1b7e-43be-9ffb-8571a613579b', 'title': 'Star Wars: Episode VI - Return of the Jedi',
+     'imdb_rating': 8.3},
+    {'id': 'cddf9b8f-27f9-4fe9-97cb-9e27d4fe3394', 'title': 'Star Wars: Episode VII - The Force Awakens',
+     'imdb_rating': 7.9},
+    {'id': '12a8279d-d851-4eb9-9d64-d690455277cc', 'title': 'Star Wars: Episode VIII - The Last Jedi',
+     'imdb_rating': 7.0},
+    {'id': '46f15353-2add-415d-9782-fa9c5b8083d5', 'title': 'Star Wars: Episode IX - The Rise of Skywalker',
+     'imdb_rating': 6.7},
     {'id': '134989c3-3b20-4ae7-8092-3e8ad2333d59', 'title': 'The Star Wars Holiday Special', 'imdb_rating': 2.1},
-    {'id': 'f241a62c-2157-432a-bbeb-9c579c8bc18b', 'title': 'Star Wars: Episode IV: A New Hope - Deleted Scenes','imdb_rating': 8.4},
-    {'id': '4f53452f-a402-4a76-89fd-f034eeb8d657','title': 'Star Wars: Episode V - The Empire Strikes Back: Deleted Scenes','imdb_rating': 7.6}]
+    {'id': 'f241a62c-2157-432a-bbeb-9c579c8bc18b', 'title': 'Star Wars: Episode IV: A New Hope - Deleted Scenes',
+     'imdb_rating': 8.4},
+    {'id': '4f53452f-a402-4a76-89fd-f034eeb8d657',
+     'title': 'Star Wars: Episode V - The Empire Strikes Back: Deleted Scenes', 'imdb_rating': 7.6}]
+
+test_films_list = [
+    {
+        "id": "2a090dde-f688-46fe-a9f4-b781a985275e",
+        "imdb_rating": 9.6,
+        "genre": [
+            "Action",
+            "Adventure",
+            "Fantasy"
+        ],
+        "title": "Test title movie 1",
+        "description": "Test description 1",
+        "director": "Test director 1",
+        "actors": [
+            {
+                "id": "00395304-dd52-4c7b-be0d-c2cd7a495684",
+                "name": "Test actor 1"
+            },
+        ],
+        "writers": [
+            {
+                "id": "1bc82e3e-d9ea-4da0-a5ea-69ba20b94373",
+                "name": "Test writer 1"
+            },
+        ]
+    },
+    {
+        "id": "c241874f-53d3-411a-8894-37c19d8bf010",
+        "imdb_rating": 9.5,
+        "genre": [
+            "Action",
+            "Fantasy",
+            "Sci-Fi",
+            "Short"
+        ],
+        "title": "Test title movie 2",
+        "description": "Test description 2",
+        "director": "Test director 2",
+        "actors": [
+            {
+                "id": "3683c176-c96e-4850-ba76-3e3a0290bf3f",
+                "name": "Test actor 2"
+            },
+        ],
+        "writers": []
+    },
+    {
+        "id": "05d7341e-e367-4e2e-acf5-4652a8435f93",
+        "imdb_rating": 9.5,
+        "genre": [
+            "Documentary"
+        ],
+        "title": "Test title movie 3",
+        "description": "Test description 3",
+        "director": "",
+        "actors": [
+            {
+                "id": "901595ba-4278-4224-b04c-974c28428a08",
+                "name": "Test actor 3"
+            },
+        ],
+        "writers": []
+    },
+    {
+        "id": "c49c1df9-6d06-47b7-87db-d96190901fa4",
+        "imdb_rating": 9.4,
+        "genre": [
+            "Comedy",
+            "Short"
+        ],
+        "title": "Test title 4",
+        "description": "",
+        "director": "Test director 4",
+        "actors": [
+            {
+                "id": "14b21c3c-332c-4f12-aa5d-ec5d45f427c3",
+                "name": "Test actor 4"
+            },
+        ],
+        "writers": [
+            {
+                "id": "0695b905-3201-42d6-afee-f47929a928ef",
+                "name": "Test writer 4"
+            },
+        ]
+    },
+    {
+        "id": "c71db79a-6978-46da-9b89-43a92ebfceac",
+        "imdb_rating": 9.2,
+        "genre": [
+            "Action",
+            "Adventure",
+            "Family"
+        ],
+        "title": "Test title 5",
+        "description": None,
+        "director": "Test director 5",
+        "actors": [],
+        "writers": []
+    },
+    {
+        "id": "2e5561a2-bb7f-48d3-8249-fb668db6014a",
+        "imdb_rating": 9.2,
+        "genre": [
+            "Action",
+            "Adventure",
+            "Comedy"
+        ],
+        "title": "Test title 6",
+        "description": "Test description 6",
+        "director": "Test director 6",
+        "actors": [
+            {
+                "id": "8b223e9f-4782-489c-a277-80375aafdced",
+                "name": "Test actor 6"
+            },
+        ],
+        "writers": [
+            {
+                "id": "1f95b24c-c2e1-4fde-9c84-66e769b1a112",
+                "name": "Test writer 6"
+            },
+        ]
+    },
+
+    {
+        "id": "2e5561a2-bb7f-48d3-8249-fb668db6015a",
+        "imdb_rating": 5.2,
+        "genre": [
+            "Action",
+            "Adventure",
+            "Comedy"
+        ],
+        "title": "Test title 7",
+        "description": "Test description 7",
+        "director": "Test director 7",
+        "actors": [
+            {
+                "id": "8b223e9f-4782-489c-a277-80375aafdced",
+                "name": "Test actor 6"
+            },
+        ],
+        "writers": [
+            {
+                "id": "1f95b24c-c2e1-4fde-9c84-66e769b1a102",
+                "name": "Test writer 7"
+            },
+        ]
+    },
+]
+
+response_film_by_id = {
+    "total_count": 2,
+    "current_from": 0,
+    "page_size": 10,
+    "records": [
+        {
+            "id": "2e5561a2-bb7f-48d3-8249-fb668db6014a",
+            "title": "Test title 6",
+            "imdb_rating": 9.2
+        },
+        {
+            "id": "2e5561a2-bb7f-48d3-8249-fb668db6015a",
+            "title": "Test title 7",
+            "imdb_rating": 5.2
+        }
+    ]
+}
+
+search_by_name = {
+  "total_count": 2,
+  "current_from": 0,
+  "page_size": 10,
+  "records": [
+    {
+      "id": "ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a19",
+      "full_name": "Christopher Lee"
+    },
+    {
+      "id": "ef1e2ad4-df4f-4fe0-8fa9-b8db690c4a00",
+      "full_name": "Christopher Leedov"
+    }
+  ]
+}

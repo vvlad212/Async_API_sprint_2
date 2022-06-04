@@ -36,7 +36,7 @@ class PersonService:
         if not doc:
             return None
         person = Person(**doc['_source'])
-        await self.cache_storage.set_data(key=f"film_{person_id}", data=json.dumps(doc['_source']))
+        await self.cache_storage.set_data(key=f"{person_id}", data=json.dumps(doc['_source']))
 
         return person
 
@@ -87,7 +87,7 @@ class PersonService:
         :return: Optional[List[Person], None]
         """
 
-        cashed_data = await self.cache_storage.get_data(key=f'person_name_{page_size}{offset_from}')
+        cashed_data = await self.cache_storage.get_data(key=f'person_{name}_{page_size}{offset_from}')
         if cashed_data:
             person_list = [Person(**d['_source']) for d in json.loads(cashed_data.decode('utf8'))['data']]
             total = json.loads(cashed_data.decode('utf8'))['total']
@@ -105,7 +105,7 @@ class PersonService:
             'data': elastic_response['hits']['hits']
         }
         await self.cache_storage.set_data(
-            key=f'person_list{page_size}{offset_from}',
+            key=f'person_{name}_{page_size}{offset_from}',
             data=json.dumps(redis_json))
 
         if not person_list:
