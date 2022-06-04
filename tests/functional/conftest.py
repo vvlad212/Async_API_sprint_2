@@ -84,7 +84,7 @@ async def es_client_source():
 
 
 @pytest.fixture(scope='session', autouse=True)
-async def init_db(es_client, es_client_source, redis_client):
+async def init_db(es_client, es_client_source):
     index_list = await es_client_source.indices.get_alias()
     await create_indexes(es_client, es_client_source, index_list)
     yield
