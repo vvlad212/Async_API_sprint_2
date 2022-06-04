@@ -1,6 +1,6 @@
 from typing import List, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class Person(BaseModel):
@@ -16,7 +16,14 @@ class Genre(BaseModel):
 class FilmByPersonModel(BaseModel):
     id: str
     title: str
-    imdb_rating: Optional[float] = None
+    imdb_rating: Optional[float] = Field(
+        ge=0,
+        le=10,
+    )
+
+    @validator('imdb_rating')
+    def set_imdb_rating(cls, rating):
+        return rating or 0
 
 
 class PersonFilmWork(BaseModel):

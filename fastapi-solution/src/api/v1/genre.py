@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 
@@ -11,12 +11,13 @@ router = APIRouter()
 
 @router.get('/{genre_id}', response_model=Genre)
 async def genre_details(
-        genre_id: Union[str, None] = Query(
+        genre_id: Optional[str] = Query(
             default=None,
             title="Genre id",
             min_length=8,
         ),
-        genre_service: GenreService = Depends(get_genre_service)) -> Genre:
+        genre_service: GenreService = Depends(get_genre_service)
+) -> Genre:
     """Получение жанра по ID.
 
     Args:
@@ -39,12 +40,13 @@ async def genre_list(
             title="Page size",
             alias="page[size]"
         ),
-        page_number: Union[int] = Query(
+        page_number: Optional[int] = Query(
             default=0,
             title="Page number",
             alias="page[number]"
         ),
-        genre_service: GenreService = Depends(get_genre_service)) -> ListResponseModel:
+        genre_service: GenreService = Depends(get_genre_service)
+) -> ListResponseModel:
     """Получение списка жанров.
 
     Args:
@@ -60,8 +62,9 @@ async def genre_list(
     if not genre:
         raise GenreHTTPNotFoundError
 
-    return ListResponseModel(records=[Genre(id=p.id, name=p.name) for p in genre],
-                                 total_count=total,
-                                 current_page=page_number,
-                                 total_page=int(total / page_size),
-                                 page_size=page_size)
+    return ListResponseModel(
+        records=[Genre(id=p.id, name=p.name) for p in genre],
+        total_count=total,
+        current_page=page_number,
+        total_page=int(total / page_size),
+        page_size=page_size)

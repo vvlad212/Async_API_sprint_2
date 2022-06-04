@@ -10,7 +10,23 @@ from services.person import PersonService, get_person_service
 router = APIRouter()
 
 
-@router.get('/{person_id}', response_model=Person)
+@router.get(
+    '/{person_id}',
+    response_model=Person,
+    responses={
+        200: {
+            "description": "Person requested by ID",
+        },
+        404: {
+            "description": "Not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Person(s) not found"}
+                }
+            },
+        },
+    },
+)
 async def person_details(
         person_id: Union[str, None] = Query(
             title="Person id",
@@ -32,7 +48,22 @@ async def person_details(
     return Person(id=person.id, full_name=person.full_name)
 
 
-@router.get('/', response_model=ListResponseModel)
+@router.get('/',
+            response_model=ListResponseModel,
+            responses={
+                200: {
+                    "description": "Person requested list",
+                },
+                404: {
+                    "description": "Not found",
+                    "content": {
+                        "application/json": {
+                            "example": {"detail": "Person(s) not found"}
+                        }
+                    },
+                },
+            },
+            )
 async def person_list(
         page_size: Optional[int] = Query(
             default=10,
@@ -61,13 +92,29 @@ async def person_list(
         raise PersonHTTPNotFoundError
 
     return ListResponseModel(records=[Person(id=p.id, full_name=p.full_name) for p in list_person],
-                                 total_count=total,
-                                 current_page=page_number,
-                                 total_page=int(total / page_size),
-                                 page_size=page_size)
+                             total_count=total,
+                             current_page=page_number,
+                             total_page=int(total / page_size),
+                             page_size=page_size)
 
 
-@router.get('/search/{person_name}', response_model=ListResponseModel)
+@router.get(
+    '/search/{person_name}',
+    response_model=ListResponseModel,
+    responses={
+        200: {
+            "description": "Person requested by name",
+        },
+        404: {
+            "description": "Not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Person(s) not found"}
+                }
+            },
+        },
+    },
+)
 async def person_by_name(
         name: Union[str, None] = Query(
             default=None,
@@ -113,7 +160,23 @@ async def person_by_name(
         page_size=page_size)
 
 
-@router.get('/{person_id}/film', response_model=ListResponseModel)
+@router.get(
+    '/{person_id}/film',
+    response_model=ListResponseModel,
+    responses={
+        200: {
+            "description": "Film requested by person ID",
+        },
+        404: {
+            "description": "Not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Film(s) not found"}
+                }
+            },
+        },
+    },
+)
 async def film_by_person_id(
         person_id: Union[str, None] = Query(
             default=None,
