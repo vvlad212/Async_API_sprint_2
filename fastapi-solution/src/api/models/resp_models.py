@@ -25,10 +25,11 @@ class PersonFilmWork(BaseModel):
 
 
 class ListResponseModel(BaseModel):
-    total_count: int
-    current_from: int
-    page_size: int
     records: Union[List[Person], List[Genre], List[FilmByPersonModel]]
+    total_count: int
+    current_page: int
+    total_page: int
+    page_size: int
 
 
 class FilmRespModel(BaseModel):
