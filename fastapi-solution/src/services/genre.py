@@ -57,9 +57,7 @@ class GenreService:
 
         Args:
             genre_id: str
-
         Returns: Optional[Genres]
-
         """
 
         cashed_data = await self.cache_storage.get_data(key=genre_id)
