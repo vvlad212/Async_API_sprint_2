@@ -60,6 +60,13 @@ async def test_get_person_list_cached(es_client, redis_client, make_get_request)
 
 
 @pytest.mark.asyncio
+async def test_wrong_get_person_detailed(make_get_request, es_client):
+    response = await make_get_request(f'/person/123')
+    assert response.status == 404
+    assert response.body['detail'] == 'Person(s) not found'
+
+
+@pytest.mark.asyncio
 async def test_get_person_detailed(make_get_request, es_client):
     person_id = str(person_list[0]['id'])
     full_name = person_list[0]['full_name']

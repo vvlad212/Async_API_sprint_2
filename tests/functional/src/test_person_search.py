@@ -3,7 +3,7 @@ import json
 import pytest
 
 from ..testdata.persondata_in import person_list
-from ..testdata.persondata_in import test_films_list, response_film_by_id,search_by_name
+from ..testdata.persondata_in import test_films_list, response_film_by_id, search_by_name
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -80,10 +80,11 @@ async def test_search_person_name(es_client, make_get_request):
         for keys in row.keys():
             assert row[keys] == result_response_list[str(row['id'])][keys]
 
+
 @pytest.mark.asyncio
 async def test_search_person_name_cashed(es_client, redis_client, make_get_request):
     await make_get_request('/person/search/{person_name}?name=Christopher',
-                                      params={'page[size]': 100})
+                           params={'page[size]': 100})
 
     response = await redis_client.get(f'person_Christopher_1000')
     response = json.loads(response.decode('utf8'))
