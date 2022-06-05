@@ -61,7 +61,7 @@ async def test_get_genre_list_cached(es_client, redis_client, make_get_request):
 
 @pytest.mark.asyncio
 async def test_wrong_get_genre_detailed(make_get_request, es_client):
-    response = await make_get_request(f'/genre/123')
+    response = await make_get_request(f'/genre/12345678')
     assert response.status == 404
     assert response.body['detail'] == 'Genre(s) not found'
 
