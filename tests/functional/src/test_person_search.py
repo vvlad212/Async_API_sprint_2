@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from ..testdata.persondata_in import person_list
-from ..testdata.persondata_in import test_films_list, response_film_by_id, search_by_name
+from ..testdata.persondata_in import (person_list, response_film_by_id,
+                                      search_by_name, test_films_list)
 
 
 @pytest.fixture(scope='session', autouse=True)

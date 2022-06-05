@@ -1,13 +1,14 @@
 import asyncio
-import aioredis
-import aiohttp
-import pytest
-from logging import getLogger
-
-from typing import Optional
 from dataclasses import dataclass
-from multidict import CIMultiDictProxy
+from logging import getLogger
+from typing import Optional
+
+import aiohttp
+import aioredis
+import pytest
 from elasticsearch import AsyncElasticsearch
+from multidict import CIMultiDictProxy
+
 from .settings import *
 
 logger = getLogger(__name__)

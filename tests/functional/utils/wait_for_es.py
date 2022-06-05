@@ -5,15 +5,11 @@ from typing import Tuple
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
+from logger import log_conf
 from urllib3.exceptions import NewConnectionError
 
-from logger import log_conf
-from settings import (
-    ELASTIC_HOST,
-    ELASTIC_HOST_SOURCE,
-    ELASTIC_PORT,
-    ELASTIC_PORT_SOURCE
-)
+from settings import (ELASTIC_HOST, ELASTIC_HOST_SOURCE, ELASTIC_PORT,
+                      ELASTIC_PORT_SOURCE)
 
 logger_conf.dictConfig(log_conf)
 logger = logging.getLogger(__name__)

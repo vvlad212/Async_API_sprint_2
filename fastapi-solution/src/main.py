@@ -57,9 +57,4 @@ app.include_router(films.router, prefix='/api/v1/films')
 app.include_router(person.router, prefix='/api/v1/person', tags=['person'])
 app.include_router(genre.router, prefix='/api/v1/genre', tags=['genre'])
 
-if __name__ == '__main__':
-    uvicorn.run(
-        'main:app',
-        host='0.0.0.0',
-        port=8000,
-    )
+

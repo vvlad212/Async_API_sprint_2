@@ -1,9 +1,9 @@
 import json
-from elasticsearch import AsyncElasticsearch
+
 import pytest
+from elasticsearch import AsyncElasticsearch
 
 from ..testdata.films_list_data import test_films_list
-
 
 MOVIES_INDEX = "movies"
 
