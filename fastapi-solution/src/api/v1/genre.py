@@ -1,6 +1,7 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Path
+from pydantic import Required
 
 from api.errors.httperrors import GenreHTTPNotFoundError
 from api.models.resp_models import Genre, ListResponseModel
@@ -9,23 +10,39 @@ from services.genre import GenreService, get_genre_service
 router = APIRouter()
 
 
-@router.get('/{genre_id}', response_model=Genre)
+@router.get(
+    '/{genre_id}',
+    response_model=Genre,
+    tags=["genre"],
+    responses={
+        200: {
+            "description": "Genres requested by ID",
+        },
+        404: {
+            "description": "Not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Genres(s) not found"}
+                }
+            },
+        },
+    },
+)
 async def genre_details(
-        genre_id: Optional[str] = Query(
-            default=None,
+        genre_id: Optional[str] = Path(
+            default=Required,
             title="Genre id",
+            description="UUID of the genres to get.",
+            example="3d8d9bf5-0d90-4353-88ba-4ccc5d2c07ff",
             min_length=8,
         ),
         genre_service: GenreService = Depends(get_genre_service)
 ) -> Genre:
     """Получение жанра по ID.
-
     Args:
         genre_id: str
         genre_service: GenreService
-
     Returns: Genre
-
     """
     genre = await genre_service.get_by_id(genre_id)
     if not genre:
@@ -33,16 +50,35 @@ async def genre_details(
     return Genre(id=genre.id, name=genre.name)
 
 
-@router.get('/', response_model=ListResponseModel)
+@router.get(
+    '/',
+    response_model=ListResponseModel,
+    tags=["genre"],
+    responses={
+        200: {
+            "description": "Genre requested list",
+        },
+        404: {
+            "description": "Not found",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Genre(s) not found"}
+                }
+            },
+        },
+    },
+)
 async def genre_list(
         page_size: Optional[int] = Query(
             default=10,
             title="Page size",
+            description="Number of posts per page.",
             alias="page[size]"
         ),
         page_number: Optional[int] = Query(
             default=0,
             title="Page number",
+            description="Calculated as page_size * page_number",
             alias="page[number]"
         ),
         genre_service: GenreService = Depends(get_genre_service)
