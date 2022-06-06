@@ -1,8 +1,5 @@
 from abc import ABC, abstractmethod
 
-from fastapi import Query
-from pydantic import BaseModel
-
 
 class ABSService(ABC):
 
