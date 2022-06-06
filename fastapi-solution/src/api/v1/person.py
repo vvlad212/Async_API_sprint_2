@@ -6,6 +6,7 @@ from pydantic import Required
 from api.errors.httperrors import (FilmHTTPNotFoundError,
                                    PersonHTTPNotFoundError)
 from api.models.resp_models import FilmByPersonModel, ListResponseModel, Person
+from pkg.pagination.pagination import Paginator, parse_pagination
 from services.person import PersonService, get_person_service
 
 router = APIRouter()
@@ -69,39 +70,31 @@ async def person_details(
             },
             )
 async def person_list(
-        page_size: Optional[int] = Query(
-            default=10,
-            title="Page size",
-            description="Number of posts per page.",
-            alias="page[size]"
-        ),
-        page_number: Optional[int] = Query(
-            default=0,
-            title="Page number",
-            description="Calculated as page_size * page_number",
-            alias="page[number]"
-        ),
-        person_service: PersonService = Depends(get_person_service)) -> ListResponseModel:
+        paginator: Paginator = Depends(parse_pagination),
+        person_service: PersonService = Depends(
+            get_person_service)) -> ListResponseModel:
     """Получение списка персон.
 
     Args:
-        page_size: int
-        page_number: int
+        paginator: Paginator
         person_service: PersonService
 
     Returns: List[Person]:
 
     """
-    offset_from = page_number * page_size
-    total, list_person = await person_service.get_list(page_size, offset_from)
+
+    offset_from = paginator.page_number * paginator.page_size
+    total, list_person = await person_service.get_list(paginator.page_size,
+                                                       offset_from)
     if not list_person:
         raise PersonHTTPNotFoundError
 
-    return ListResponseModel(records=[Person(id=p.id, full_name=p.full_name) for p in list_person],
-                             total_count=total,
-                             current_page=page_number,
-                             total_page=int(total / page_size),
-                             page_size=page_size)
+    return ListResponseModel(
+        records=[Person(id=p.id, full_name=p.full_name) for p in list_person],
+        total_count=total,
+        current_page=paginator.page_number,
+        total_page=int(total / paginator.page_size),
+        page_size=paginator.page_size)
 
 
 @router.get(
@@ -130,33 +123,22 @@ async def person_by_name(
             example="Tom",
             min_length=2,
         ),
-        page_size: Optional[int] = Query(
-            default=10,
-            title="Page size",
-            description="Number of posts per page.",
-            alias="page[size]"
-        ),
-        page_number: Optional[int] = Query(
-            default=0,
-            title="Page number",
-            description="Calculated as page_size * page_number",
-            alias="page[number]"
-        ),
-        person_service: PersonService = Depends(get_person_service)) -> ListResponseModel:
+        paginator: Paginator = Depends(parse_pagination),
+        person_service: PersonService = Depends(
+            get_person_service)) -> ListResponseModel:
     """Поиск персон по имени.
 
     Args:
         name: str
-        page_size: int
-        page_number: int
+        paginator: Paginator
         person_service: PersonService
 
     Returns: List[Person]
     """
-    offset_from = page_number * page_size
+    offset_from = paginator.page_number * paginator.page_size
     total, list_person = await person_service.get_by_name(
         name=name,
-        page_size=page_size,
+        page_size=paginator.page_size,
         offset_from=offset_from
     )
 
@@ -166,9 +148,9 @@ async def person_by_name(
     return ListResponseModel(
         records=[Person(id=p.id, full_name=p.full_name) for p in list_person],
         total_count=total,
-        current_page=page_number,
-        total_page=int(total / page_size),
-        page_size=page_size)
+        current_page=paginator.page_number,
+        total_page=int(total / paginator.page_size),
+        page_size=paginator.page_size)
 
 
 @router.get(
@@ -197,40 +179,33 @@ async def film_by_person_id(
             description="UUID of the person to be found in movies.",
             example="e9405a78-8147-4a48-b129-0afa5d7da9dc",
         ),
-        page_size: Optional[int] = Query(
-            default=10,
-            title="Page size",
-            description="Number of posts per page.",
-            alias="page[size]"
-        ),
-        page_number: Optional[int] = Query(
-            default=0,
-            title="Page number",
-            description="Calculated as page_size * page_number",
-            alias="page[number]"
-        ),
-        person_service: PersonService = Depends(get_person_service)) -> ListResponseModel:
+        paginator: Paginator = Depends(parse_pagination),
+        person_service: PersonService = Depends(
+            get_person_service)) -> ListResponseModel:
     """Получение фильма по персоне, через ID персоны.
 
     Args:
         person_id: str
-        page_size: int
-        page_number: int
+        paginator: Paginator
         person_service: PersonService
 
     Returns: List[FilmByPersonModel]:
 
     """
-    offset_from = page_number * page_size
-    total, film_list = await person_service.get_film_by_person(person_id=person_id,
-                                                               page_size=page_size,
-                                                               offset_from=offset_from)
+    offset_from = paginator.page_number * paginator.page_size
+    total, film_list = await person_service.get_film_by_person(
+        person_id=person_id,
+        page_size=paginator.page_size,
+        offset_from=offset_from)
+
     if not film_list:
         raise FilmHTTPNotFoundError
 
     return ListResponseModel(
-        records=[FilmByPersonModel(id=f.id, title=f.title, imdb_rating=f.imdb_rating) for f in film_list],
+        records=[FilmByPersonModel(id=f.id, title=f.title,
+                                   imdb_rating=f.imdb_rating) for f in
+                 film_list],
         total_count=total,
-        current_page=page_number,
-        total_page=int(total / page_size),
-        page_size=page_size)
+        current_page=paginator.page_number,
+        total_page=int(total / paginator.page_size),
+        page_size=paginator.page_size)
