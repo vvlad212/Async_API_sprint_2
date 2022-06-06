@@ -45,11 +45,8 @@ async def create_indexes(
             index=ind,
             body={
                 "settings": {
-                    'refresh_interval':
-                        source_settings[ind]['settings']['index'][
-                            'refresh_interval'],
-                    'analysis': source_settings[ind]['settings']['index'][
-                        'analysis']
+                    'refresh_interval': source_settings[ind]['settings']['index']['refresh_interval'],
+                    'analysis': source_settings[ind]['settings']['index']['analysis']
                 },
                 "mappings": source_mapping[ind]['mappings']
             }
@@ -113,8 +110,7 @@ async def session():
 
 @pytest.fixture
 def make_get_request(session):
-    async def inner(method: str,
-                    params: Optional[dict] = None) -> HTTPResponse:
+    async def inner(method: str, params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
         url = SERVICE_URL + API + method
         async with session.get(url, params=params) as response:
