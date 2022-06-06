@@ -13,6 +13,7 @@ from .settings import *
 
 logger = getLogger(__name__)
 
+pytestmark = pytest.mark.asyncio
 
 @dataclass
 class HTTPResponse:
