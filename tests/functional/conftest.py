@@ -104,13 +104,6 @@ async def redis_client():
     await rd_client.wait_closed()
 
 
-@pytest.fixture
-async def init_db(es_client):
-    await check_index(es_client)
-    yield
-    # await delete_index
-
-
 @pytest.fixture(scope='session')
 async def session():
     session = aiohttp.ClientSession()
