@@ -5,6 +5,7 @@ from pydantic import Required
 
 from api.errors.httperrors import GenreHTTPNotFoundError
 from api.models.resp_models import Genre, ListResponseModel
+from pkg.pagination.pagination import Paginator, parse_pagination
 from services.genre import GenreService, get_genre_service
 
 router = APIRouter()
@@ -69,38 +70,27 @@ async def genre_details(
     },
 )
 async def genre_list(
-        page_size: Optional[int] = Query(
-            default=10,
-            title="Page size",
-            description="Number of posts per page.",
-            alias="page[size]"
-        ),
-        page_number: Optional[int] = Query(
-            default=0,
-            title="Page number",
-            description="Calculated as page_size * page_number",
-            alias="page[number]"
-        ),
+        paginator: Paginator = Depends(parse_pagination),
         genre_service: GenreService = Depends(get_genre_service)
 ) -> ListResponseModel:
     """Получение списка жанров.
 
     Args:
-        page_size: int
-        page_number: int
+        paginator: Paginator
         genre_service: GenreService
 
     Returns: List[Genre]
     """
 
-    offset_from = page_number * page_size
-    total, genre = await genre_service.get_list(page_size, offset_from)
+    offset_from = paginator.page_number * paginator.page_size
+    total, genre = await genre_service.get_list(paginator.page_size,
+                                                offset_from)
     if not genre:
         raise GenreHTTPNotFoundError
 
     return ListResponseModel(
         records=[Genre(id=p.id, name=p.name) for p in genre],
         total_count=total,
-        current_page=page_number,
-        total_page=int(total / page_size),
-        page_size=page_size)
+        current_page=paginator.page_number,
+        total_page=int(total / paginator.page_size),
+        page_size=paginator.page_size)
