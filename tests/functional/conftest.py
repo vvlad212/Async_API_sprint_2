@@ -12,7 +12,7 @@ from multidict import CIMultiDictProxy
 from .settings import *
 
 logger = getLogger(__name__)
-
+pytestmark = pytest.mark.asyncio
 
 @dataclass
 class HTTPResponse:
@@ -100,6 +100,12 @@ async def redis_client():
     rd_client.close()
     await rd_client.wait_closed()
 
+
+@pytest.fixture
+async def init_db(es_client):
+    await check_index(es_client)
+    yield
+    # await delete_index
 
 @pytest.fixture(scope='session')
 async def session():
