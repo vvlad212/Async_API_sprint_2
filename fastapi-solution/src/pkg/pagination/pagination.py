@@ -5,7 +5,7 @@ class Paginator:
     def __init__(
             self,
             page_size: int = Query(
-                default=10,
+                default=20,
                 gt=0,
                 title="Page size",
                 description="Number of posts per page.",
