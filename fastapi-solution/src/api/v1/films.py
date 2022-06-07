@@ -1,11 +1,13 @@
 import math
 from enum import Enum
+from pydantic import Required
 from typing import List, Union
+
+from fastapi import APIRouter, Depends, Query, Path
 
 from api.errors.httperrors import FilmHTTPNotFoundError
 from api.models.resp_models import FilmRespModel, FilmsResponseModel
-from fastapi import APIRouter, Depends, Path, Query
-from pydantic import Required
+from pkg.pagination.pagination import Paginator
 from services.films import FilmService, get_film_service
 
 router = APIRouter()
@@ -79,16 +81,7 @@ async def get_films_list(
             title="Film(s) genres",
             description="Sorting order by imdb rating.",
         ),
-        page_number: int = Query(
-            default=1,
-            gt=0,
-            description="Pagination page number.",
-        ),
-        page_size: int = Query(
-            default=20,
-            gt=0,
-            description="Pagination size number.",
-        ),
+        paginator: Paginator = Depends(),
         film_service: FilmService = Depends(get_film_service)
 ) -> FilmsResponseModel:
     """
@@ -98,16 +91,16 @@ async def get_films_list(
         name,
         genres,
         sort,
-        page_number,
-        page_size
+        paginator.page_number,
+        paginator.page_size
     )
 
     films_res = [FilmRespModel.parse_obj(film.dict()) for film in films]
 
     return FilmsResponseModel(
         total_count=total_count,
-        page_count=math.ceil(total_count / page_size),
-        page_number=page_number,
-        page_size=page_size,
+        page_count=math.ceil(total_count / paginator.page_size),
+        page_number=paginator.page_number,
+        page_size=paginator.page_size,
         records=films_res
     )

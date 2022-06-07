@@ -1,14 +1,21 @@
+from http import HTTPStatus
 import json
 import uuid
 
 import pytest
 from elasticsearch import AsyncElasticsearch
 
+from api.errors.httperrors import FilmHTTPNotFoundError
 from ..testdata.film_test_data import film_test_doc
 
+pytestmark = pytest.mark.asyncio
 
-@pytest.mark.asyncio
-async def test_get_film_detail_positive(es_client: AsyncElasticsearch, redis_client, make_get_request):
+
+async def test_get_film_detail_positive(
+    es_client: AsyncElasticsearch,
+    redis_client,
+    make_get_request
+):
     """
     endpoint /films/{film_id} positive test
     """
@@ -24,7 +31,7 @@ async def test_get_film_detail_positive(es_client: AsyncElasticsearch, redis_cli
     await es_client.delete(index='movies', id=film_test_doc["id"])
 
     # result checking
-    assert response.status == 200, "wrong status code"
+    assert response.status == HTTPStatus.OK, "wrong status code"
 
     resp_body = response.body
     resp_body["actors"].sort(key=lambda x: x["id"])
@@ -49,7 +56,6 @@ async def test_get_film_detail_positive(es_client: AsyncElasticsearch, redis_cli
     await redis_client.delete(cache_key)
 
 
-@pytest.mark.asyncio
 async def test_get_film_detail_negative(make_get_request):
     """
     endpoint /films/{film_id} negative test
@@ -57,9 +63,8 @@ async def test_get_film_detail_negative(make_get_request):
     # request making
     response = await make_get_request(f'/films/{uuid.uuid4()}')
 
-    assert response.status == 404, "wrong status code"
+    assert response.status == FilmHTTPNotFoundError.status_code, "wrong status code"
 
-    neg_res_body = {
-        "detail": "Film(s) not found"
-    }
-    assert response.body == neg_res_body, "wrong negative response body"
+    body_detail = response.body.get('detail')
+
+    assert body_detail == FilmHTTPNotFoundError.detail, "wrong negative response body"
