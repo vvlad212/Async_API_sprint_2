@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 
 class Paginator(BaseModel):
+
     page_size: int
     page_number: int
 
