@@ -12,6 +12,7 @@ from multidict import CIMultiDictProxy
 from .settings import *
 
 logger = getLogger(__name__)
+pytestmark = pytest.mark.asyncio
 
 pytestmark = pytest.mark.asyncio
 

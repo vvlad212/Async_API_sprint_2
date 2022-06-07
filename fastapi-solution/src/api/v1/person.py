@@ -6,7 +6,7 @@ from pydantic import Required
 from api.errors.httperrors import (FilmHTTPNotFoundError,
                                    PersonHTTPNotFoundError)
 from api.models.resp_models import FilmByPersonModel, ListResponseModel, Person
-from pkg.pagination.pagination import Paginator, parse_pagination
+from pkg.pagination.pagination import Paginator
 from services.person import PersonService, get_person_service
 
 router = APIRouter()
@@ -70,7 +70,7 @@ async def person_details(
             },
             )
 async def person_list(
-        paginator: Paginator = Depends(parse_pagination),
+        paginator: Paginator = Depends(),
         person_service: PersonService = Depends(
             get_person_service)) -> ListResponseModel:
     """Получение списка персон.
@@ -123,7 +123,7 @@ async def person_by_name(
             example="Tom",
             min_length=2,
         ),
-        paginator: Paginator = Depends(parse_pagination),
+        paginator: Paginator = Depends(),
         person_service: PersonService = Depends(
             get_person_service)) -> ListResponseModel:
     """Поиск персон по имени.
@@ -179,7 +179,7 @@ async def film_by_person_id(
             description="UUID of the person to be found in movies.",
             example="e9405a78-8147-4a48-b129-0afa5d7da9dc",
         ),
-        paginator: Paginator = Depends(parse_pagination),
+        paginator: Paginator = Depends(),
         person_service: PersonService = Depends(
             get_person_service)) -> ListResponseModel:
     """Получение фильма по персоне, через ID персоны.
