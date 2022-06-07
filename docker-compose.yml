@@ -31,8 +31,6 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - discovery.type=single-node
 
-
-
   web_test:
     build: ./fastapi-solution
     depends_on:
@@ -45,9 +43,10 @@ services:
     environment:
       ES_HOST: elasticsearch_test
       REDIS_HOST: redis-cache_test
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   api_tests:
-    build: ./tests
+    build: fastapi-solution/src/tests
     entrypoint: >
       sh -c "python3 /functional/utils/wait_for_es.py
       && python3 /functional/utils/wait_for_redis.py
@@ -59,6 +58,7 @@ services:
       - web_test
     env_file:
       - ./.env
+    command: ["pytest", "-vv" ,"functional"]
 
 volumes:
   new_admin_panel_sprint_3_elasticsearch-data:
