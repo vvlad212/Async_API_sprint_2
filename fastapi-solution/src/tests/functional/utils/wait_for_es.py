@@ -1,7 +1,7 @@
 import logging
 import time
 from logging import config as logger_conf
-from typing import Tuple
+
 
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
