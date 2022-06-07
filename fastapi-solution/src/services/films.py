@@ -4,13 +4,13 @@ from functools import lru_cache
 from typing import List, Optional, Tuple
 
 from fastapi import Depends
-
-from .service import ABSService
 from models.film import FilmFull
 from pkg.cache_storage.redis_storage import get_redis_storage_service
 from pkg.cache_storage.storage import ABSCacheStorage
 from pkg.storage.elastic_storage import get_elastic_storage_service
 from pkg.storage.storage import ABSStorage
+
+from .service import ABSService
 
 logger = logging.getLogger(__name__)
 

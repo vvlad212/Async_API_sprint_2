@@ -1,12 +1,11 @@
 from typing import Optional, Union
 
-from fastapi import APIRouter, Depends, Query, Path
-from pydantic import Required
-
 from api.errors.httperrors import (FilmHTTPNotFoundError,
                                    PersonHTTPNotFoundError)
 from api.models.resp_models import FilmByPersonModel, ListResponseModel, Person
+from fastapi import APIRouter, Depends, Path, Query
 from pkg.pagination.pagination import Paginator
+from pydantic import Required
 from services.person import PersonService, get_person_service
 
 router = APIRouter()

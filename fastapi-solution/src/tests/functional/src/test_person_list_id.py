@@ -2,10 +2,9 @@ import json
 from http import HTTPStatus
 
 import pytest
-
 from api.errors import httperrors
-from ..testdata.persondata_in import person_list
 
+from ..testdata.persondata_in import person_list
 
 pytestmark = pytest.mark.asyncio
 

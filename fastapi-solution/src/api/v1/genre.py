@@ -1,11 +1,10 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, Path
-from pydantic import Required
-
 from api.errors.httperrors import GenreHTTPNotFoundError
 from api.models.resp_models import Genre, ListResponseModel
+from fastapi import APIRouter, Depends, Path, Query
 from pkg.pagination.pagination import Paginator
+from pydantic import Required
 from services.genre import GenreService, get_genre_service
 
 router = APIRouter()

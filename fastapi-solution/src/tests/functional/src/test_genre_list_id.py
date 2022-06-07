@@ -3,8 +3,8 @@ import json
 from http import HTTPStatus
 
 import pytest
-
 from api.errors import httperrors
+
 from ..testdata.genredata_in import genre_list
 
 pytestmark = pytest.mark.asyncio

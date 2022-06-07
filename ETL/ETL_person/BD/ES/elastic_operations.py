@@ -1,8 +1,7 @@
 import logging
 
-from elasticsearch import Elasticsearch, ElasticsearchException
-
 from backoff import backoff
+from elasticsearch import Elasticsearch, ElasticsearchException
 
 logger = logging.getLogger(__name__)
 

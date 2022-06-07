@@ -1,5 +1,5 @@
-from pydantic.class_validators import Optional
 from models.config import Base
+from pydantic.class_validators import Optional
 
 
 class Person(Base):

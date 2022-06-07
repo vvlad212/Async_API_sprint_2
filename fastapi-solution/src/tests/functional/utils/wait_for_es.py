@@ -2,14 +2,12 @@ import logging
 import time
 from logging import config as logger_conf
 
-
 from elasticsearch import Elasticsearch
 from elasticsearch.exceptions import ConnectionError
 from logger import log_conf
-from urllib3.exceptions import NewConnectionError
-
 from settings import (ELASTIC_HOST, ELASTIC_HOST_SOURCE, ELASTIC_PORT,
                       ELASTIC_PORT_SOURCE)
+from urllib3.exceptions import NewConnectionError
 
 logger_conf.dictConfig(log_conf)
 logger = logging.getLogger(__name__)
