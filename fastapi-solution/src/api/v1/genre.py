@@ -5,31 +5,12 @@ from pydantic import Required
 
 from api.errors.httperrors import GenreHTTPNotFoundError
 from api.models.resp_models import Genre, ListResponseModel
-# from pkg.pagination.pagination import Paginator, parse_pagination
+from pkg.pagination.pagination import Paginator
 from services.genre import GenreService, get_genre_service
 
 router = APIRouter()
 
 
-class Paginator:
-    def __init__(
-            self,
-            page_size: int = Query(
-                default=20,
-                gt=0,
-                title="Page size",
-                description="Number of posts per page.",
-                alias="page[size]"),
-            page_number: int = Query(
-                default=0,
-                gt=0,
-                title="Page number",
-                description="Pagination page number.",
-                alias="page[number]"
-            )
-    ):
-        self.page_size = page_size
-        self.page_number = page_number
 
 @router.get(
     '/{genre_id}',
