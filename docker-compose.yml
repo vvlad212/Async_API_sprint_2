@@ -46,7 +46,9 @@ services:
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   api_tests:
-    build: fastapi-solution/src/tests
+    build:
+      context: fastapi-solution/src
+      dockerfile: tests/Dockerfile
     entrypoint: >
       sh -c "python3 /functional/utils/wait_for_es.py
       && python3 /functional/utils/wait_for_redis.py
