@@ -187,8 +187,6 @@ async def test_get_films_list_negative_page_size(make_get_request):
 
     assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY, "wrong validation error page size status"
 
-    print(response.body)
-
     assert response.body == {
         "detail": [
             {
