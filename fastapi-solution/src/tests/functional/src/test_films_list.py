@@ -1,11 +1,13 @@
+from http import HTTPStatus
 import json
 
-import pytest
 from elasticsearch import AsyncElasticsearch
+import pytest
 
 from ..testdata.films_list_data import test_films_list
 
 MOVIES_INDEX = "movies"
+pytestmark = pytest.mark.asyncio
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -47,7 +49,6 @@ async def bulk_create_tests_data(redis_client, es_client: AsyncElasticsearch):
             await redis_client.delete(key)
 
 
-@pytest.mark.asyncio
 async def test_get_films_list(redis_client, make_get_request):
     """
     Test GET /films positive test for whole films list with pagination
@@ -55,10 +56,10 @@ async def test_get_films_list(redis_client, make_get_request):
     # first page
     response = await make_get_request(
         f"/films",
-        params={"page_number": 1, "page_size": 3}
+        params={"page[number]": 1, "page[size]": 3}
     )
 
-    assert response.status == 200, "wrong status code full films list page 1"
+    assert response.status == HTTPStatus.OK, "wrong status code full films list page 1"
 
     assert response.body == {
         "total_count": 6,
@@ -71,10 +72,10 @@ async def test_get_films_list(redis_client, make_get_request):
     # second page
     response = await make_get_request(
         f"/films",
-        params={"page_number": 2, "page_size": 3}
+        params={"page[number]": 2, "page[size]": 3}
     )
 
-    assert response.status == 200, "wrong status code full films list page 2"
+    assert response.status == HTTPStatus.OK, "wrong status code full films list page 2"
 
     assert response.body == {
         "total_count": 6,
@@ -95,7 +96,6 @@ async def test_get_films_list(redis_client, make_get_request):
                                 "source": test_films_list[3:]}, "wrong cache response page 2"
 
 
-@pytest.mark.asyncio
 async def test_get_filtered_films_list(redis_client, make_get_request):
     """
     Test GET /films with filters by film name and genres
@@ -110,7 +110,7 @@ async def test_get_filtered_films_list(redis_client, make_get_request):
         }
     )
 
-    assert response.status == 200, "wrong status code filtered films list"
+    assert response.status == HTTPStatus.OK, "wrong status code filtered films list"
     sorted_res = sorted(
         test_films_list[:2],
         key=lambda x: x["imdb_rating"],
@@ -133,7 +133,6 @@ async def test_get_filtered_films_list(redis_client, make_get_request):
     }, "wrong cache response filtered films list body"
 
 
-@ pytest.mark.asyncio
 async def test_get_empty_films_list(make_get_request):
     """
     Test that GET /films returns empty films list wo error
@@ -145,7 +144,7 @@ async def test_get_empty_films_list(make_get_request):
         }
     )
 
-    assert response.status == 200, "wrong status code empty films list"
+    assert response.status == HTTPStatus.OK, "wrong status code empty films list"
 
     assert response.body == {
         'total_count': 0,
@@ -156,20 +155,19 @@ async def test_get_empty_films_list(make_get_request):
     }, "wrong resp body for empty films list"
 
 
-@ pytest.mark.asyncio
 async def test_get_films_list_negative_page_number(make_get_request):
     """
     Test GET /films with validation error by page_number
     """
-    response = await make_get_request(f'/films', params={'page_number': -1})
+    response = await make_get_request(f'/films', params={'page[number]': -1})
 
-    assert response.status == 422, "wrong validation error page number status"
-    expected_res = {
+    assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY, "wrong validation error page number status"
+    assert response.body == {
         "detail": [
             {
                 "loc": [
                     "query",
-                    "page_number"
+                    "page[number]"
                 ],
                 "msg": "ensure this value is greater than 0",
                 "type": "value_error.number.not_gt",
@@ -178,24 +176,25 @@ async def test_get_films_list_negative_page_number(make_get_request):
                 }
             }
         ]
-    }
-    assert response.body == expected_res, "wrong validation error page number body"
+    }, "wrong validation error page number body"
 
 
-@ pytest.mark.asyncio
 async def test_get_films_list_negative_page_size(make_get_request):
     """
     Test GET /films with validation error by page_size
     """
-    response = await make_get_request(f'/films', params={'page_size': -1})
+    response = await make_get_request(f'/films', params={'page[size]': -1})
 
-    assert response.status == 422, "wrong validation error page size status"
-    expected_res = {
+    assert response.status == HTTPStatus.UNPROCESSABLE_ENTITY, "wrong validation error page size status"
+
+    print(response.body)
+
+    assert response.body == {
         "detail": [
             {
                 "loc": [
                     "query",
-                    "page_size"
+                    "page[size]"
                 ],
                 "msg": "ensure this value is greater than 0",
                 "type": "value_error.number.not_gt",
@@ -204,5 +203,4 @@ async def test_get_films_list_negative_page_size(make_get_request):
                 }
             }
         ]
-    }
-    assert response.body == expected_res, "wrong validation error page size body"
+    }, "wrong validation error page size body"
