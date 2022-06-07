@@ -5,10 +5,11 @@ from pydantic import Required
 
 from api.errors.httperrors import GenreHTTPNotFoundError
 from api.models.resp_models import Genre, ListResponseModel
-from pkg.pagination.pagination import Paginator, parse_pagination
+from pkg.pagination.pagination import Paginator
 from services.genre import GenreService, get_genre_service
 
 router = APIRouter()
+
 
 
 @router.get(
@@ -70,7 +71,7 @@ async def genre_details(
     },
 )
 async def genre_list(
-        paginator: Paginator = Depends(parse_pagination),
+        paginator: Paginator = Depends(),
         genre_service: GenreService = Depends(get_genre_service)
 ) -> ListResponseModel:
     """Получение списка жанров.
