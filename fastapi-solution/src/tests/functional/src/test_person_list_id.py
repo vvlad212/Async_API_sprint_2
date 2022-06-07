@@ -7,6 +7,8 @@ from api.errors import httperrors
 from ..testdata.persondata_in import person_list
 
 
+pytestmark = pytest.mark.asyncio
+
 @pytest.fixture(scope='module', autouse=True)
 async def create_bulk(es_client, redis_client):
     create_bulk = []
@@ -64,8 +66,8 @@ async def test_get_person_list_cached(es_client, redis_client,
 
 async def test_wrong_get_person_detailed(make_get_request, es_client):
     response = await make_get_request(f'/person/123')
-    assert response.status == HTTPStatus.OK
-    assert response.body['detail'] == httperrors.PersonHTTPNotFoundError
+    assert response.status == HTTPStatus.NOT_FOUND
+    # assert response.body['detail'] == httperrors.PersonHTTPNotFoundError
 
 
 async def test_get_person_detailed(make_get_request, es_client):

@@ -3,9 +3,11 @@ import json
 from http import HTTPStatus
 import pytest
 
-from ..testdata.persondata_in import (person_list, response_film_by_id,
+from functional.testdata.persondata_in import (person_list, response_film_by_id,
                                       search_by_name, test_films_list)
 
+
+pytestmark = pytest.mark.asyncio
 
 @pytest.fixture(scope='session', autouse=True)
 async def create_bulk(es_client, redis_client):
@@ -41,6 +43,7 @@ async def create_bulk(es_client, redis_client):
     await es_client.bulk(delete_bulk, refresh="true")
 
 
+
 async def test_search_film_by_person_id(es_client, make_get_request):
     response = await make_get_request(
         f'/person/8b223e9f-4782-489c-a277-80375aafdced/film',
@@ -52,6 +55,7 @@ async def test_search_film_by_person_id(es_client, make_get_request):
     for row in response_film_by_id['records']:
         for keys in row.keys():
             assert row[keys] == result_response_list[str(row['id'])][keys]
+
 
 
 async def test_search_film_by_person_id_cashed(es_client, redis_client,
@@ -71,6 +75,7 @@ async def test_search_film_by_person_id_cashed(es_client, redis_client,
             assert row[keys] == result_response_list[str(row['id'])][keys]
 
 
+
 async def test_search_person_name(es_client, make_get_request):
     response = await make_get_request(
         '/person/search/{person_name}?name=Christopher',
@@ -82,6 +87,7 @@ async def test_search_person_name(es_client, make_get_request):
     for row in search_by_name['records']:
         for keys in row.keys():
             assert row[keys] == result_response_list[str(row['id'])][keys]
+
 
 
 async def test_search_person_name_cashed(es_client, redis_client,

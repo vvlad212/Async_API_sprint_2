@@ -8,5 +8,5 @@ RUN python -m pip install --upgrade pip
 RUN pip install --upgrade setuptools
 RUN pip install -r ./requirements.txt
 ENV PYTHONPATH "${PYTHONPATH}:/functional"
-COPY src/tests/functional functional
+COPY tests/functional functional
 
