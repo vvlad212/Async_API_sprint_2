@@ -1,12 +1,11 @@
 import math
 from enum import Enum
-from pydantic import Required
 from typing import List, Union
-
-from fastapi import APIRouter, Depends, Query, Path
 
 from api.errors.httperrors import FilmHTTPNotFoundError
 from api.models.resp_models import FilmRespModel, FilmsResponseModel
+from fastapi import APIRouter, Depends, Path, Query
+from pydantic import Required
 from services.films import FilmService, get_film_service
 
 router = APIRouter()

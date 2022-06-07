@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime, timezone
 
+from pkg.es_loader import ESLoader
 from pkg.psql_extractor import PsqlExtractor
 from pkg.state_saver import StateSaver
-from pkg.es_loader import ESLoader
 
 logging.getLogger().addHandler(logging.StreamHandler())
 logger = logging.getLogger()

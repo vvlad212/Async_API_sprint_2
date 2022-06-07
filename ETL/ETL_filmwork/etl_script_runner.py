@@ -2,14 +2,10 @@ import logging
 import os
 from datetime import datetime, timezone
 
-from pkg.psql_extractor import PsqlExtractor
-from pkg.state_saver import (
-    GENRE_STATE_NAME,
-    PERSONS_STATE_NAME,
-    FILMWORK_STATE_NAME,
-    StateSaver
-)
 from pkg.es_loader import ESLoader
+from pkg.psql_extractor import PsqlExtractor
+from pkg.state_saver import (FILMWORK_STATE_NAME, GENRE_STATE_NAME,
+                             PERSONS_STATE_NAME, StateSaver)
 
 logging.getLogger().addHandler(logging.StreamHandler())
 logger = logging.getLogger()

@@ -2,10 +2,10 @@ import abc
 from abc import ABC
 from typing import Any
 
-from redis import exceptions as redis_exception
+from backoff import backoff, logger
 from redis.client import Redis
 
-from backoff import backoff, logger
+from redis import exceptions as redis_exception
 
 
 class BaseStorage(ABC):

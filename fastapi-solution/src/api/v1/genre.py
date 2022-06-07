@@ -1,11 +1,10 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, Path
-from pydantic import Required
-
 from api.errors.httperrors import GenreHTTPNotFoundError
 from api.models.resp_models import Genre, ListResponseModel
+from fastapi import APIRouter, Depends, Path, Query
 from pkg.pagination.pagination import Paginator
+from pydantic import Required
 from services.genre import GenreService, get_genre_service
 
 router = APIRouter()
@@ -83,7 +82,7 @@ async def genre_list(
     Returns: List[Genre]
     """
 
-    offset_from = paginator.page_number * paginator.page_size
+    offset_from = (paginator.page_number-1) * paginator.page_size
     total, genre = await genre_service.get_list(paginator.page_size,
                                                 offset_from)
     if not genre:
@@ -93,5 +92,5 @@ async def genre_list(
         records=[Genre(id=p.id, name=p.name) for p in genre],
         total_count=total,
         current_page=paginator.page_number,
-        total_page=int(total / paginator.page_size),
+        total_page=int(total / paginator.page_size)+1,
         page_size=paginator.page_size)

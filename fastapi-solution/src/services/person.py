@@ -2,16 +2,14 @@ import json
 from functools import lru_cache
 from typing import Optional, Tuple, Union
 
+from db.elastic_queries import *
 from fastapi import Depends
-
 from models.film import FilmFull
 from models.person import Person
 from pkg.cache_storage.redis_storage import get_redis_storage_service
 from pkg.cache_storage.storage import ABSCacheStorage
 from pkg.storage.elastic_storage import get_elastic_storage_service
 from pkg.storage.storage import ABSStorage
-
-from db.elastic_queries import *
 
 
 class PersonService:

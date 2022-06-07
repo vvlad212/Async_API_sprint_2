@@ -2,9 +2,8 @@ import json
 from functools import lru_cache
 from typing import List, Optional, Tuple, Union
 
-from fastapi import Depends
-
 from db.elastic_queries import match_query
+from fastapi import Depends
 from models.genre import Genres
 from pkg.cache_storage.redis_storage import get_redis_storage_service
 from pkg.cache_storage.storage import ABSCacheStorage

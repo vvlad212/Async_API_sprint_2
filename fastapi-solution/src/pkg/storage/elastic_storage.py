@@ -1,19 +1,15 @@
 import logging
 from functools import lru_cache
-from typing import Union, Dict
+from typing import Dict, Union
 
 import backoff
-from elasticsearch import (
-    Elasticsearch,
-    NotFoundError,
-    ConnectionError
-)
-
-from ..backoff_handlers.req_handler import create_backoff_hdlr
+from db import elastic_queries
 from db.elastic import get_elastic
+from elasticsearch import ConnectionError, Elasticsearch, NotFoundError
 from fastapi import Depends
 from pkg.storage.storage import ABSStorage
-from db import elastic_queries
+
+from ..backoff_handlers.req_handler import create_backoff_hdlr
 
 logger = logging.getLogger(__name__)
 

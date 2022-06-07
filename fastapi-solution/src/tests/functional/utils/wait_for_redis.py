@@ -3,10 +3,10 @@ import time
 from logging import config as logger_conf
 
 from logger import log_conf
-from redis import Redis
 from redis.exceptions import ConnectionError
-
 from settings import REDIS_HOST, REDIS_PORT
+
+from redis import Redis
 
 logger_conf.dictConfig(log_conf)
 logger = logging.getLogger(__name__)

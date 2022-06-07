@@ -2,10 +2,9 @@ import logging
 from typing import Dict, Optional
 
 import psycopg2
+from backoff import backoff
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import DictCursor
-
-from backoff import backoff
 
 logger = logging.getLogger(__name__)
 

@@ -2,16 +2,15 @@ import logging
 
 import aioredis
 import uvicorn
-from elasticsearch import AsyncElasticsearch
-from fastapi import FastAPI
-from fastapi.openapi.utils import get_openapi
-from fastapi.responses import ORJSONResponse
-
 from api.metadata.tags_metadata import tags_metadata
 from api.v1 import films, genre, person
 from core import config
 from core.logger import LOGGING
 from db import elastic, redis
+from elasticsearch import AsyncElasticsearch
+from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import ORJSONResponse
 
 app = FastAPI(
     docs_url='/api/openapi',
@@ -56,11 +55,4 @@ async def shutdown():
 app.include_router(films.router, prefix='/api/v1/films')
 app.include_router(person.router, prefix='/api/v1/person', tags=['person'])
 app.include_router(genre.router, prefix='/api/v1/genre', tags=['genre'])
-
-if __name__ == '__main__':
-    uvicorn.run(
-        'main:app',
-        host='0.0.0.0',
-        port=8000,
-    )
 
