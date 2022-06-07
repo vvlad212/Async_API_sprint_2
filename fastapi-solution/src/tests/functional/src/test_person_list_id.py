@@ -67,7 +67,7 @@ async def test_get_person_list_cached(es_client, redis_client,
 async def test_wrong_get_person_detailed(make_get_request, es_client):
     response = await make_get_request(f'/person/123')
     assert response.status == HTTPStatus.NOT_FOUND
-    # assert response.body['detail'] == httperrors.PersonHTTPNotFoundError
+    assert response.body['detail'] == httperrors.PersonHTTPNotFoundError.detail
 
 
 async def test_get_person_detailed(make_get_request, es_client):

@@ -3,7 +3,7 @@ import json
 from http import HTTPStatus
 import pytest
 
-from functional.testdata.persondata_in import (person_list, response_film_by_id,
+from ..testdata.persondata_in import (person_list, response_film_by_id,
                                       search_by_name, test_films_list)
 
 

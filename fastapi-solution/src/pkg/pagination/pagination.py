@@ -11,7 +11,7 @@ class Paginator:
                 description="Number of posts per page.",
                 alias="page[size]"),
             page_number: int = Query(
-                default=0,
+                default=1,
                 gt=0,
                 title="Page number",
                 description="Pagination page number.",

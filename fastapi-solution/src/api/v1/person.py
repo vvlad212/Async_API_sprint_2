@@ -83,7 +83,7 @@ async def person_list(
 
     """
 
-    offset_from = paginator.page_number * paginator.page_size
+    offset_from = (paginator.page_number-1) * paginator.page_size
     total, list_person = await person_service.get_list(paginator.page_size,
                                                        offset_from)
     if not list_person:
@@ -93,7 +93,7 @@ async def person_list(
         records=[Person(id=p.id, full_name=p.full_name) for p in list_person],
         total_count=total,
         current_page=paginator.page_number,
-        total_page=int(total / paginator.page_size),
+        total_page=int(total / paginator.page_size)+1,
         page_size=paginator.page_size)
 
 
@@ -135,7 +135,7 @@ async def person_by_name(
 
     Returns: List[Person]
     """
-    offset_from = paginator.page_number * paginator.page_size
+    offset_from = (paginator.page_number-1) * paginator.page_size
     total, list_person = await person_service.get_by_name(
         name=name,
         page_size=paginator.page_size,
@@ -192,7 +192,7 @@ async def film_by_person_id(
     Returns: List[FilmByPersonModel]:
 
     """
-    offset_from = paginator.page_number * paginator.page_size
+    offset_from = (paginator.page_number-1) * paginator.page_size
     total, film_list = await person_service.get_film_by_person(
         person_id=person_id,
         page_size=paginator.page_size,
